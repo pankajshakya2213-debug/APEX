@@ -4,6 +4,27 @@ import bcrypt from 'bcryptjs'
 
 const StoreClass = (Store as any).default || Store
 const store = new StoreClass()
+const CREATOR_LOCK_NOTICE =
+  'Creator identity is locked: APEX was created by Pankaj and this cannot be changed.'
+
+const sanitizePersonality = (text: string) => {
+  return text
+    .split(/\r?\n/)
+    .filter((line) => {
+      const normalized = line.toLowerCase()
+      return !(
+        normalized.includes('creator') ||
+        normalized.includes('created by') ||
+        normalized.includes('made by') ||
+        normalized.includes('built by') ||
+        normalized.includes('banaya') ||
+        normalized.includes('banaya hai') ||
+        normalized.includes('pankaj')
+      )
+    })
+    .join('\n')
+    .trim()
+}
 
 export default function registerSecurityVault() {
   const legacyFace = store.get('iris_vault_face') as number[] | undefined
@@ -24,8 +45,14 @@ export default function registerSecurityVault() {
   })
 
   ipcMain.handle('set-personality', (_, text: string) => {
-    store.set('iris_personality', text)
-    return true
+    const sanitized = sanitizePersonality(text || '')
+    store.set('iris_personality', sanitized)
+    return {
+      success: true,
+      sanitized,
+      changed: sanitized !== (text || '').trim(),
+      message: sanitized !== (text || '').trim() ? CREATOR_LOCK_NOTICE : 'Personality saved.'
+    }
   })
 
   ipcMain.handle('setup-vault-pin', async (_, pin: string) => {

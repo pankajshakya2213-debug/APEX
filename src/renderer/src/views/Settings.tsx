@@ -144,13 +144,17 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
 
   const savePersonality = async () => {
     if (window.electron?.ipcRenderer) {
-      await window.electron.ipcRenderer.invoke('set-personality', personality)
-      alert('Personality Matrix Saved.')
+      const res = await window.electron.ipcRenderer.invoke('set-personality', personality)
+      if (res?.sanitized !== undefined) setPersonality(res.sanitized)
+      alert(res?.message || 'Personality Matrix Saved.')
     }
   }
 
   const saveUserName = () => {
-    localStorage.setItem('iris_user_name', userName)
+    const cleanName = userName.trim()
+    setUserName(cleanName)
+    if (cleanName) localStorage.setItem('iris_user_name', cleanName)
+    else localStorage.removeItem('iris_user_name')
     alert('User Designation Saved.')
   }
 
