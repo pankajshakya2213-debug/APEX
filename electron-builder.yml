@@ -1,0 +1,29 @@
+appId: com.harshpandey.apex
+productName: APEX
+publish:
+  provider: github
+  owner: pankajshakya2213-debug
+  repo: APEX
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**/*
+  - build/**/*
+  - package.json
+npmRebuild: false
+win:
+  signAndEditExecutable: false
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: APEX-Setup-v${version}.exe
+extraResources:
+  - from: resources
+    to: .
+    filter:
+      - "**/*"
