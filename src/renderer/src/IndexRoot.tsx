@@ -27,9 +27,14 @@ const IndexRoot = () => {
 
   const [isVideoOn, setIsVideoOn] = useState(false)
   const [visionMode, setVisionMode] = useState<VisionMode>('none')
+  const [isCameraOn, setIsCameraOn] = useState(false)
+  const [isScreenOn, setIsScreenOn] = useState(false)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null)
 
   const processingVideoRef = useRef<HTMLVideoElement>(document.createElement('video'))
-  const activeStreamRef = useRef<MediaStream | null>(null)
+  const cameraStreamRef = useRef<MediaStream | null>(null)
+  const screenStreamRef = useRef<MediaStream | null>(null)
   const aiIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -82,17 +87,44 @@ const IndexRoot = () => {
     irisService.setMute(s)
   }
 
-  const stopActiveStream = () => {
-    if (!activeStreamRef.current) return
+  const syncVisionState = () => {
+    const cameraActive = Boolean(cameraStreamRef.current)
+    const screenActive = Boolean(screenStreamRef.current)
+    setIsCameraOn(cameraActive)
+    setIsScreenOn(screenActive)
+    setIsVideoOn(cameraActive || screenActive)
+    setVisionMode(screenActive ? 'screen' : cameraActive ? 'camera' : 'none')
+  }
+
+  const setProcessingSource = async () => {
+    const stream = screenStreamRef.current || cameraStreamRef.current
+    if (!processingVideoRef.current) return
+    if (!stream) {
+      processingVideoRef.current.pause()
+      processingVideoRef.current.srcObject = null
+      return
+    }
+    processingVideoRef.current.srcObject = stream
+    await processingVideoRef.current.play().catch(() => {})
+  }
+
+  const stopVisionMode = async (mode: 'camera' | 'screen') => {
+    const streamRef = mode === 'camera' ? cameraStreamRef : screenStreamRef
+    const stream = streamRef.current
+    if (!stream) return
     try {
-      activeStreamRef.current.getTracks().forEach((track) => {
+      stream.getTracks().forEach((track) => {
         try {
           track.onended = null
         } catch (err) {}
         track.stop()
       })
     } finally {
-      activeStreamRef.current = null
+      streamRef.current = null
+      if (mode === 'camera') setCameraStream(null)
+      else setScreenStream(null)
+      syncVisionState()
+      await setProcessingSource()
     }
   }
 
@@ -100,11 +132,10 @@ const IndexRoot = () => {
     if (!isSystemActive) return
 
     try {
-      stopActiveStream()
-
       let stream: MediaStream
 
       if (mode === 'camera') {
+        await stopVisionMode('camera')
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
@@ -114,6 +145,7 @@ const IndexRoot = () => {
           }
         })
       } else {
+        await stopVisionMode('screen')
         const sourceId = await getScreenSourceId()
         if (!sourceId) return
         stream = await navigator.mediaDevices.getUserMedia({
@@ -130,25 +162,26 @@ const IndexRoot = () => {
         })
       }
 
-      activeStreamRef.current = stream
-
-      if (processingVideoRef.current) {
-        processingVideoRef.current.srcObject = stream
-        await processingVideoRef.current.play().catch(() => {})
+      if (mode === 'camera') {
+        cameraStreamRef.current = stream
+        setCameraStream(stream)
+      } else {
+        screenStreamRef.current = stream
+        setScreenStream(stream)
       }
 
-      setVisionMode(mode)
-      setIsVideoOn(true)
+      syncVisionState()
+      await setProcessingSource()
 
       startAIProcessing()
 
       const track = stream.getVideoTracks()[0]
       if (track) {
-        track.onended = () => stopVision()
+        track.onended = () => stopVisionMode(mode)
       }
     } catch (err) {
       console.error('Failed to start vision stream', err)
-      stopVision()
+      await stopVisionMode(mode)
       alert(
         'Camera could not start. Close other camera apps and try again, or check Windows camera permissions.'
       )
@@ -156,10 +189,8 @@ const IndexRoot = () => {
   }
 
   const stopVision = () => {
-    setIsVideoOn(false)
-    setVisionMode('none')
-
-    stopActiveStream()
+    stopVisionMode('camera')
+    stopVisionMode('screen')
 
     if (processingVideoRef.current) {
       try {
@@ -205,6 +236,7 @@ const IndexRoot = () => {
           visionMode={visionMode}
           startVision={startVision}
           stopVision={stopVision}
+          stopVisionMode={stopVisionMode}
         />
       </div>
     )
@@ -223,7 +255,12 @@ const IndexRoot = () => {
           visionMode={visionMode}
           startVision={startVision}
           stopVision={stopVision}
-          activeStream={activeStreamRef.current}
+          stopVisionMode={stopVisionMode}
+          activeStream={screenStream || cameraStream}
+          cameraStream={cameraStream}
+          screenStream={screenStream}
+          isCameraOn={isCameraOn}
+          isScreenOn={isScreenOn}
         />
       </div>
       <SmartDropZonesWidget />

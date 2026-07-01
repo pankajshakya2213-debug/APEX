@@ -80,7 +80,7 @@ export default function MacroManagementMenu({ loadMacroToCanvas }: MacroMenuProp
       </button>
 
       {isMainOpen && (
-        <div className="absolute top-12 left-0 w-80 bg-[#111315] border border-white/10 rounded-xl shadow-2xl z-50 p-2 flex flex-col gap-1 max-h-96 overflow-y-auto scrollbar-small animate-in fade-in duration-200">
+        <div className="absolute bottom-12 left-0 w-80 bg-[#111315] border border-white/10 rounded-xl shadow-2xl z-50 p-2 flex flex-col gap-1 max-h-[36vh] overflow-y-auto overscroll-contain scrollbar-small animate-in fade-in duration-200">
           <h4 className="text-xs font-semibold text-zinc-400 p-2 border-b border-white/10 mb-2">
             Saved Macros
           </h4>

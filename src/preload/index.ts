@@ -32,6 +32,8 @@ if (process.contextIsolated) {
         },
         startDownload: () => ipcRenderer.send('start-download'),
         restartApp: () => ipcRenderer.send('restart-app'),
+        downloadUpdate: () => ipcRenderer.invoke('download-update'),
+        installUpdate: () => ipcRenderer.invoke('install-update'),
         checkForUpdates: () => ipcRenderer.invoke('check-for-updates')
       }
     })

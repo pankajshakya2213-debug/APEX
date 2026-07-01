@@ -17,7 +17,8 @@ import {
   RiAddLine,
   RiTerminalLine,
   RiFileCopyLine,
-  RiCheckLine
+  RiCheckLine,
+  RiDeleteBinLine
 } from 'react-icons/ri'
 
 const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
@@ -33,7 +34,6 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
   const screenRef = useRef<HTMLImageElement>(null)
   const isStreaming = useRef(false)
   const knownNotifs = useRef<string[]>([])
-  const hasAutoConnected = useRef(false)
 
   const [telemetry, setTelemetry] = useState({
     model: 'UNKNOWN DEVICE',
@@ -54,18 +54,8 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
         fetchTelemetry()
         startScreenStream()
       } else {
-        // 2. Fallback: try history auto-connect if nothing is active
         window.electron.ipcRenderer.invoke('adb-get-history').then((data) => {
           setDeviceHistory(data)
-          if (data.length > 0 && !hasAutoConnected.current) {
-            hasAutoConnected.current = true
-            const lastDevice = data[data.length - 1]
-            if (lastDevice && lastDevice.ip) {
-              setIp(lastDevice.ip)
-              setPort(lastDevice.port)
-              connectToDevice(lastDevice.ip, lastDevice.port)
-            }
-          }
         })
       }
     })
@@ -166,7 +156,10 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
     try {
       const res = await window.electron.ipcRenderer.invoke('adb-connect-usb')
       if (res.success) {
-        setConnectionMode('usb')
+        const device = res.device
+        if (device?.ip) setIp(device.ip)
+        if (device?.port) setPort(device.port)
+        setConnectionMode(device?.mode || 'usb')
         setStatus('connected')
         isStreaming.current = true
         fetchTelemetry()
@@ -189,6 +182,32 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
     setStatus('idle')
     setConnectionMode(null)
     if (screenRef.current) screenRef.current.src = ''
+  }
+
+  const deleteSavedDevice = async (event: React.MouseEvent, dev: any) => {
+    event.stopPropagation()
+    const ok = window.confirm(`Delete saved device "${dev.model || dev.ip}"?`)
+    if (!ok) return
+
+    try {
+      const res = await window.electron.ipcRenderer.invoke('adb-delete-history-device', {
+        ip: dev.ip,
+        port: dev.port
+      })
+      if (res?.success) {
+        setDeviceHistory(res.devices || [])
+        if (ip === dev.ip && port === dev.port) {
+          setStatus('idle')
+          setConnectionMode(null)
+          isStreaming.current = false
+          if (screenRef.current) screenRef.current.src = ''
+        }
+      } else {
+        setErrorMsg(res?.error || 'Could not delete saved device.')
+      }
+    } catch (e) {
+      setErrorMsg('Electron IPC Error.')
+    }
   }
 
   const executeQuickCommand = async (action: 'camera' | 'wake' | 'lock' | 'home') => {
@@ -269,10 +288,9 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {deviceHistory.map((dev, i) => (
-              <button
-                key={i}
-                onClick={() => connectToDevice(dev.ip, dev.port)}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-[#101214] p-4 text-left transition-colors hover:border-emerald-400/50 hover:bg-[#151719]"
+              <div
+                key={`${dev.ip}-${dev.port}-${i}`}
+                className="group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#101214] p-4 text-left transition-colors hover:border-emerald-400/50 hover:bg-[#151719]"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-black/25">
@@ -287,10 +305,22 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
                   </div>
                   </div>
                 </div>
-                <div className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-zinc-300">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => connectToDevice(dev.ip, dev.port)}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-zinc-300 transition-colors hover:border-emerald-400/50 hover:text-emerald-300"
+                  >
                     {status === 'connecting' && ip === dev.ip ? 'LINKING...' : 'UPLINK'}
+                  </button>
+                  <button
+                    onClick={(event) => deleteSavedDevice(event, dev)}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/5 text-red-300 opacity-70 transition-colors hover:border-red-400/50 hover:bg-red-500/15 hover:opacity-100"
+                    title="Delete saved device"
+                  >
+                    <RiDeleteBinLine size={16} />
+                  </button>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>
@@ -402,8 +432,8 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
             </div>
 
             <p className="text-sm text-zinc-400 font-mono mb-10 leading-relaxed relative z-10 pr-4">
-              USB debugging connects directly through the cable. Wi-Fi fields are only for saved
-              wireless devices when you want to use the older bridge.
+              First cable se phone trust karao. APEX USB debugging ke through phone ko connect
+              karega, phir automatically cable-free bridge banane ki koshish karega.
             </p>
 
             <div className="space-y-8 relative z-10">
@@ -416,13 +446,12 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
                 </div>
                 <div className="pb-3">
                   <h4 className="text-sm font-bold text-white tracking-wider mb-2">
-                    ENABLE USB DEBUGGING
+                    ENABLE DEVELOPER MODE
                   </h4>
                   <p className="text-xs font-mono text-zinc-500 leading-relaxed">
-                    Go to{' '}
-                    <span className="text-emerald-400/70">Settings &gt; Developer Options</span> on
-                    your Android and enable USB Debugging. (If hidden, tap "Build Number" 7 times in
-                    About Phone).
+                    Phone me <span className="text-emerald-400/70">Settings &gt; About Phone</span>{' '}
+                    open karo, phir <span className="text-emerald-400/70">Build Number</span> par 7
+                    baar tap karo. Developer Options unlock ho jayega.
                   </p>
                 </div>
               </div>
@@ -436,11 +465,12 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
                 </div>
                 <div className="pb-3">
                   <h4 className="text-sm font-bold text-white tracking-wider mb-2">
-                    PHYSICAL LINK
+                    ENABLE USB DEBUGGING
                   </h4>
                   <p className="text-xs font-mono text-zinc-500 leading-relaxed">
-                    Connect the device to this PC via USB cable. Accept the "Allow USB debugging"
-                    prompt on your phone's screen.
+                    <span className="text-emerald-400/70">Developer Options</span> me jao,{' '}
+                    <span className="text-emerald-400/70">USB Debugging</span> on karo, phone ko USB
+                    cable se laptop se connect karo, aur phone par "Allow USB debugging" accept karo.
                   </p>
                 </div>
               </div>
@@ -454,16 +484,17 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
                 </div>
                 <div className="pb-3 w-full">
                   <h4 className="text-sm font-bold text-white tracking-wider mb-2">
-                    CONNECT DIRECTLY
+                    CONNECT FROM APEX
                   </h4>
                   <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-3">
-                    Keep the cable plugged in and click Connect via USB Debugging. No same Wi-Fi
-                    network or phone IP is required.
+                    Left side me <span className="text-emerald-400/70">USB Connect</span> dabao.
+                    APEX pehle USB se connect karega, phir background me IP:5555 wireless bridge
+                    ready karega.
                   </p>
 
                   <div className="relative group w-full">
                     <code className="block w-full bg-zinc-950 border border-emerald-900/30 text-emerald-400 text-sm p-4 pr-14 rounded-xl tracking-widest font-mono">
-                      USB DEBUGGING DIRECT MODE
+                      USB CONNECT + AUTO WIRELESS BRIDGE
                     </code>
                     <button
                       onClick={handleCopyCommand}
@@ -488,11 +519,12 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-white tracking-wider mb-2">
-                    OPTIONAL WI-FI FALLBACK
+                    UNPLUG AFTER BRIDGE
                   </h4>
                   <p className="text-xs font-mono text-zinc-500 leading-relaxed">
-                    If you still want wireless mode, use the saved Wi-Fi bridge fields on the left.
-                    USB mode is the recommended default.
+                    Jab saved device card me <span className="text-emerald-400/70">IP:5555</span>{' '}
+                    ya wireless mode dikhne lage, tab cable nikal sakte ho. Agar bridge fail ho to
+                    phone USB cable lage rehne par hi chalega.
                   </p>
                 </div>
               </div>

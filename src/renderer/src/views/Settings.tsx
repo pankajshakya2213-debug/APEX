@@ -59,6 +59,10 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
   const [gmailMessage, setGmailMessage] = useState('')
   const [updateBusy, setUpdateBusy] = useState(false)
   const [updateMessage, setUpdateMessage] = useState('Ready to check GitHub releases.')
+  const [updateAvailable, setUpdateAvailable] = useState(false)
+  const [updateDownloaded, setUpdateDownloaded] = useState(false)
+  const [updateProgress, setUpdateProgress] = useState(0)
+  const [availableVersion, setAvailableVersion] = useState('')
   const [appVersion, setAppVersion] = useState('')
 
   const [isSecurityUnlocked, setIsSecurityUnlocked] = useState(false)
@@ -100,21 +104,42 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
 
     const unsubAvailable = window.electron.ipcRenderer.onUpdateAvailable?.((_event: any, info: any) => {
       setUpdateBusy(false)
-      setUpdateMessage(`Update available: v${info?.version || 'new'}.`)
+      setUpdateAvailable(true)
+      setUpdateDownloaded(false)
+      setUpdateProgress(0)
+      setAvailableVersion(info?.version || '')
+      setUpdateMessage(`Update available: v${info?.version || 'new'}. Download it inside APEX.`)
     })
     const unsubNotAvailable = window.electron.ipcRenderer.onUpdateNotAvailable?.(() => {
       setUpdateBusy(false)
+      setUpdateAvailable(false)
+      setUpdateDownloaded(false)
+      setUpdateProgress(0)
       setUpdateMessage('You are already on the latest version.')
     })
     const unsubError = window.electron.ipcRenderer.onUpdateError?.((_event: any, message: string) => {
       setUpdateBusy(false)
       setUpdateMessage(formatUpdateError(message))
     })
+    const unsubProgress = window.electron.ipcRenderer.onDownloadProgress?.((_event: any, percent: number) => {
+      const safePercent = Math.max(0, Math.min(100, Number(percent) || 0))
+      setUpdateBusy(true)
+      setUpdateProgress(safePercent)
+      setUpdateMessage(`Downloading update... ${Math.round(safePercent)}%`)
+    })
+    const unsubDownloaded = window.electron.ipcRenderer.onUpdateDownloaded?.(() => {
+      setUpdateBusy(false)
+      setUpdateDownloaded(true)
+      setUpdateProgress(100)
+      setUpdateMessage('Update downloaded. Restart APEX to apply the new version.')
+    })
 
     return () => {
       if (typeof unsubAvailable === 'function') unsubAvailable()
       if (typeof unsubNotAvailable === 'function') unsubNotAvailable()
       if (typeof unsubError === 'function') unsubError()
+      if (typeof unsubProgress === 'function') unsubProgress()
+      if (typeof unsubDownloaded === 'function') unsubDownloaded()
     }
   }, [])
 
@@ -230,6 +255,8 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
   const checkUpdates = async () => {
     if (!window.electron?.ipcRenderer) return
     setUpdateBusy(true)
+    setUpdateDownloaded(false)
+    setUpdateProgress(0)
     setUpdateMessage('Checking GitHub releases...')
     try {
       const res = await window.electron.ipcRenderer.checkForUpdates?.()
@@ -241,6 +268,29 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
       setUpdateBusy(false)
       setUpdateMessage(formatUpdateError(e?.message))
     }
+  }
+
+  const downloadUpdate = async () => {
+    if (!window.electron?.ipcRenderer) return
+    setUpdateBusy(true)
+    setUpdateProgress(0)
+    setUpdateMessage('Starting update download...')
+    try {
+      const res = await window.electron.ipcRenderer.downloadUpdate?.()
+      if (res && !res.success) {
+        setUpdateBusy(false)
+        setUpdateMessage(formatUpdateError(res.message))
+      }
+    } catch (e: any) {
+      setUpdateBusy(false)
+      setUpdateMessage(formatUpdateError(e?.message))
+    }
+  }
+
+  const installUpdate = async () => {
+    if (!window.electron?.ipcRenderer) return
+    setUpdateMessage('Restarting APEX to apply update...')
+    window.electron.ipcRenderer.installUpdate?.()
   }
 
   const currentWordCount = personality
@@ -489,17 +539,48 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                       <div className="mt-3 inline-flex rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
                         Installed version: v{appVersion || '...'}
                       </div>
+                      {availableVersion && (
+                        <div className="mt-2 inline-flex rounded-lg border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-300">
+                          Latest version: v{availableVersion}
+                        </div>
+                      )}
                       <p className="mt-2 text-xs text-zinc-400">{updateMessage}</p>
                     </div>
                   </div>
-                  <button
-                    onClick={checkUpdates}
-                    disabled={updateBusy}
-                    className="flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-5 py-3 text-xs font-semibold text-black transition-colors hover:bg-emerald-400 disabled:opacity-50"
-                  >
-                    <RiRefreshLine size={16} className={updateBusy ? 'animate-spin' : ''} />
-                    {updateBusy ? 'Checking...' : 'Check Update'}
-                  </button>
+                  {updateProgress > 0 && updateProgress < 100 && (
+                    <div className="h-2 overflow-hidden rounded-full bg-white/5">
+                      <div
+                        className="h-full rounded-full bg-emerald-400 transition-all"
+                        style={{ width: `${updateProgress}%` }}
+                      />
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <button
+                      onClick={checkUpdates}
+                      disabled={updateBusy}
+                      className="flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-5 py-3 text-xs font-semibold text-black transition-colors hover:bg-emerald-400 disabled:opacity-50"
+                    >
+                      <RiRefreshLine size={16} className={updateBusy ? 'animate-spin' : ''} />
+                      {updateBusy && updateProgress === 0 ? 'Checking...' : 'Check Update'}
+                    </button>
+                    <button
+                      onClick={downloadUpdate}
+                      disabled={updateBusy || !updateAvailable || updateDownloaded}
+                      className="flex items-center justify-center gap-2 rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-5 py-3 text-xs font-semibold text-cyan-200 transition-colors hover:bg-cyan-400 hover:text-black disabled:opacity-40"
+                    >
+                      <RiDownloadCloud2Line size={16} />
+                      Download Update
+                    </button>
+                    <button
+                      onClick={installUpdate}
+                      disabled={!updateDownloaded}
+                      className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white px-5 py-3 text-xs font-semibold text-black transition-colors hover:bg-zinc-200 disabled:bg-white/5 disabled:text-zinc-600 disabled:opacity-50"
+                    >
+                      <RiRefreshLine size={16} />
+                      Restart APEX
+                    </button>
+                  </div>
                 </div>
 
               </motion.div>

@@ -20,6 +20,7 @@ interface OverlayProps {
   visionMode: VisionMode
   startVision: (mode: 'camera' | 'screen') => void
   stopVision: () => void
+  stopVisionMode?: (mode: 'camera' | 'screen') => void
 }
 
 const MiniOverlay = ({
@@ -30,7 +31,8 @@ const MiniOverlay = ({
   isVideoOn,
   visionMode,
   startVision,
-  stopVision
+  stopVision,
+  stopVisionMode
 }: OverlayProps) => {
   const [isTalking, setIsTalking] = useState(false)
   const analyzerRef = useRef<AnalyserNode | null>(null)
@@ -56,7 +58,8 @@ const MiniOverlay = ({
 
   const handleVisionClick = (mode: 'camera' | 'screen') => {
     if (isVideoOn && visionMode === mode) {
-      stopVision()
+      if (stopVisionMode) stopVisionMode(mode)
+      else stopVision()
     } else {
       startVision(mode)
     }

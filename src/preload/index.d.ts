@@ -14,6 +14,8 @@ declare global {
         onUpdateDownloaded?(callback: (...args: any[]) => void): () => void
         startDownload?(): void
         restartApp?(): void
+        downloadUpdate?(): Promise<any>
+        installUpdate?(): Promise<any>
         checkForUpdates?(): Promise<any>
       }
     }

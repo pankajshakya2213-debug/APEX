@@ -209,6 +209,27 @@ app.whenReady().then(() => {
     autoUpdater.quitAndInstall();
   });
 
+  ipcMain.handle('download-update', async () => {
+    try {
+      if (is.dev) {
+        return { success: false, message: 'Update download works in packaged builds only.' }
+      }
+      await autoUpdater.downloadUpdate()
+      return { success: true }
+    } catch (error: any) {
+      return { success: false, message: error?.message || 'Update download failed.' }
+    }
+  })
+
+  ipcMain.handle('install-update', () => {
+    try {
+      autoUpdater.quitAndInstall()
+      return { success: true }
+    } catch (error: any) {
+      return { success: false, message: error?.message || 'Update install failed.' }
+    }
+  })
+
   ipcMain.handle('check-for-updates', async () => {
     try {
       if (is.dev) {

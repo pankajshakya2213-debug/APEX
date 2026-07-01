@@ -409,7 +409,7 @@ function Editor() {
   return (
     <div className="flex h-full w-full bg-[#090b0c] relative overflow-hidden font-sans text-zinc-100">
       <div
-        className={`fixed top-10 left-0 h-[calc(100vh-96px)] overflow-y-auto border-r border-white/10 bg-[#101214] p-4 flex flex-col gap-1 transition-all duration-300 ease-in-out z-40 library-scrollbar overflow-x-hidden ${isSidebarOpen ? 'w-72 opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-10 p-0'}`}
+        className={`fixed top-10 left-0 h-[calc(100vh-150px)] overflow-y-auto border-r border-white/10 bg-[#101214] p-4 pb-8 flex flex-col gap-1 transition-all duration-300 ease-in-out z-40 library-scrollbar overflow-x-hidden ${isSidebarOpen ? 'w-72 opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-10 p-0'}`}
       >
         {isSidebarOpen && (
           <>
@@ -468,7 +468,7 @@ function Editor() {
         onDragOver={onDragOver}
       >
         <div
-          className={`absolute bottom-20 z-10 flex items-center gap-3 transition-all ${
+          className={`absolute bottom-36 z-20 flex items-end gap-3 transition-all ${
             isSidebarOpen ? 'left-[19rem]' : 'left-5'
           }`}
         >
@@ -524,7 +524,7 @@ function Editor() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
-          className="bg-transparent"
+          className="bg-transparent pb-28"
         >
           <svg style={{ position: 'absolute', width: 0, height: 0 }}>
             <defs>

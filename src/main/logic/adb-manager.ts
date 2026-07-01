@@ -37,6 +37,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
   let isMonitoring = false
   const failedAttempts = new Map<string, number>() // IP -> timestamp of last failure
   let excludedIp: string | null = null // IP that was manually disconnected this session
+  let autoConnectPaused = false
 
   const getActiveTarget = () => {
     if (!activeDevice) return ''
@@ -152,7 +153,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     activeDevice = { id: serial, mode: 'usb', serial, model }
     excludedIp = null
     emitAutoConnected()
-    promoteUsbDeviceToWifi(serial, model).catch(() => {})
+    await promoteUsbDeviceToWifi(serial, model)
 
     return { success: true, device: activeDevice }
   }
@@ -225,6 +226,8 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
           (l) => !l.includes(':5555') && !l.includes('offline') && !l.includes('unauthorized')
         )
         const wirelessDevices = lines.filter((l) => l.includes(':5555'))
+
+        if (autoConnectPaused) return
 
         if (activeDevice?.mode === 'usb' && activeDevice.serial) {
           const stillConnected = usbDevices.some((line) => line.startsWith(activeDevice?.serial || ''))
@@ -333,9 +336,44 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   })
 
+  ipcMain.removeHandler('adb-delete-history-device')
+  ipcMain.handle('adb-delete-history-device', async (_, { ip, port }) => {
+    try {
+      if (!existsSync(historyPath)) return { success: true, devices: [] }
+      const file = await fs.readFile(historyPath, 'utf-8')
+      const history = file ? JSON.parse(file) : []
+      const nextHistory = history.filter((device: any) => {
+        if (port) return !(device.ip === ip && String(device.port) === String(port))
+        return device.ip !== ip
+      })
+      await fs.mkdir(dirPath, { recursive: true })
+      await fs.writeFile(historyPath, JSON.stringify(nextHistory, null, 2))
+
+      const currentDevice = activeDevice
+      const isActiveDevice =
+        currentDevice !== null &&
+        currentDevice.ip === ip &&
+        (!port || String(currentDevice.port) === String(port))
+
+      if (isActiveDevice) {
+        autoConnectPaused = true
+        activeDevice = null
+        excludedIp = ip
+        try {
+          await execAsync(`${adb} disconnect ${ip}:${port || '5555'}`)
+        } catch (e) {}
+      }
+
+      return { success: true, devices: nextHistory }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
+
   ipcMain.removeHandler('adb-connect')
   ipcMain.handle('adb-connect', async (_, { ip, port }) => {
     try {
+      autoConnectPaused = false
       const { stdout } = await execAsync(`${adb} connect ${ip}:${port}`)
 
       if (
@@ -363,6 +401,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
   ipcMain.removeHandler('adb-connect-usb')
   ipcMain.handle('adb-connect-usb', async () => {
     try {
+      autoConnectPaused = false
       return await connectFirstUsbDevice()
     } catch (e: any) {
       return { success: false, error: e.message }
@@ -371,6 +410,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
 
   ipcMain.removeHandler('adb-disconnect')
   ipcMain.handle('adb-disconnect', async () => {
+    autoConnectPaused = true
     if (!activeDevice) return { success: true }
     try {
       if (activeDevice.mode === 'wifi' && activeDevice.ip && activeDevice.port) {

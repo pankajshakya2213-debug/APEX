@@ -38,13 +38,19 @@ interface APEXProps {
   visionMode: VisionMode
   startVision: (mode: 'camera' | 'screen') => void
   stopVision: () => void
+  stopVisionMode?: (mode: 'camera' | 'screen') => void
   activeStream: MediaStream | null
+  cameraStream?: MediaStream | null
+  screenStream?: MediaStream | null
+  isCameraOn?: boolean
+  isScreenOn?: boolean
 }
 
 const glassPanel = 'aurora-glass aurora-glass-hover'
 
 const APEX = (props: APEXProps) => {
   const [activeTab, setActiveTab] = useState('DASHBOARD')
+  const [dashboardPanel, setDashboardPanel] = useState<string | null>(null)
   const [stats, setStats] = useState<any>(null)
   const [time, setTime] = useState<Date>(new Date())
   const [chatHistory, setChatHistory] = useState<any[]>([])
@@ -105,6 +111,28 @@ const APEX = (props: APEXProps) => {
     localStorage.setItem('apex_blob_color', color)
   }
 
+  const openDashboardPanel = (tab: string) => {
+    if (tab === 'DASHBOARD') {
+      setDashboardPanel(null)
+      return
+    }
+    setDashboardPanel(tab)
+  }
+
+  const openFullTab = (tab: string) => {
+    setDashboardPanel(null)
+    setActiveTab(tab)
+  }
+
+  const renderPanelContent = (tab: string) => {
+    if (tab === 'PHONE') return <PhoneView glassPanel={glassPanel} />
+    if (tab === 'Macros') return <WorkFlowEditorView />
+    if (tab === 'NOTES') return <NotesView glassPanel={glassPanel} />
+    if (tab === 'SETTINGS') return <SettingsView isSystemActive={props.isSystemActive} />
+    if (tab === 'GALLERY') return <GalleryView />
+    return null
+  }
+
   return (
     <div className="h-screen w-full bg-[#070908] text-zinc-100 font-sans overflow-hidden select-none flex flex-col relative">
       <div className="h-10 w-full flex items-center justify-between px-5 z-50 border-b border-white/10 bg-black/75">
@@ -131,7 +159,7 @@ const APEX = (props: APEXProps) => {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 z-[80] hidden h-14 w-full items-center justify-between border-t border-white/10 bg-black/85 px-10 backdrop-blur-xl md:flex">
+        <div className={`fixed bottom-0 left-0 z-[80] h-14 w-full items-center justify-between border-t border-white/10 bg-black/85 px-10 backdrop-blur-xl ${activeTab === 'DASHBOARD' ? 'hidden' : 'hidden md:flex'}`}>
           <div className="flex min-w-[520px] items-center gap-7">
             {[
               { id: 'DASHBOARD', icon: <RiLayoutGridLine /> },
@@ -143,7 +171,7 @@ const APEX = (props: APEXProps) => {
             ].map((tab) => (
               <div key={tab.id} className="flex items-center gap-2">
                 <button
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => openFullTab(tab.id)}
                   className={`flex w-18 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-[10px] font-medium transition-all duration-200 ${
                     activeTab === tab.id ? 'text-emerald-300' : 'text-zinc-400 hover:text-white'
                   }`}
@@ -208,7 +236,7 @@ const APEX = (props: APEXProps) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden relative bg-[#070908] pb-14">
+      <div className={`flex-1 overflow-hidden relative bg-[#070908] ${activeTab === 'DASHBOARD' ? 'pb-0' : 'pb-14'}`}>
         <div className={`absolute inset-0 ${activeTab === 'DASHBOARD' ? 'block' : 'hidden'}`}>
           <DashboardView
             props={props}
@@ -216,7 +244,34 @@ const APEX = (props: APEXProps) => {
             chatHistory={chatHistory}
             onVisionClick={handleVisionClick}
             blobColor={blobColor}
+            onNavigate={openDashboardPanel}
           />
+
+          {dashboardPanel && (
+            <div className="absolute bottom-5 right-5 top-5 z-[70] overflow-hidden rounded-[28px] border border-emerald-400/25 bg-[#070908]/96 shadow-[0_24px_90px_rgba(0,0,0,0.55)] backdrop-blur-2xl animate-in slide-in-from-left-24 fade-in duration-300 lg:left-[500px] left-5">
+              <div className="absolute left-0 right-0 top-0 z-20 flex h-14 items-center justify-between border-b border-white/10 bg-black/55 px-5 backdrop-blur-xl">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">
+                    {dashboardPanel === 'Macros' ? 'Macro' : dashboardPanel}
+                  </p>
+                  <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-zinc-500">
+                    Slide workspace
+                  </p>
+                </div>
+                <button
+                  onClick={() => setDashboardPanel(null)}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-emerald-400/40 hover:text-emerald-300"
+                  title="Close panel"
+                >
+                  <RiCloseLine size={18} />
+                </button>
+              </div>
+
+              <div className="absolute inset-0 pt-14">
+                <Suspense fallback={<ViewSkeleton />}>{renderPanelContent(dashboardPanel)}</Suspense>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className={`absolute inset-0 ${activeTab === 'PHONE' ? 'block' : 'hidden'}`}>
