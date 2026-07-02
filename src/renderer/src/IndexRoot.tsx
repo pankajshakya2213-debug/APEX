@@ -36,6 +36,7 @@ const IndexRoot = () => {
   const cameraStreamRef = useRef<MediaStream | null>(null)
   const screenStreamRef = useRef<MediaStream | null>(null)
   const aiIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const isConnectingRef = useRef(false)
 
   useEffect(() => {
     window.electron.ipcRenderer.on('overlay-mode', (_e, mode) => setIsOverlay(mode))
@@ -46,7 +47,7 @@ const IndexRoot = () => {
 
   useEffect(() => {
     const watchdog = setInterval(() => {
-      if (isSystemActive && !irisService.isConnected) {
+      if (isSystemActive && !irisService.isConnected && !isConnectingRef.current) {
         setIsSystemActive(false)
         setIsMicMuted(true)
         stopVision()
@@ -58,8 +59,10 @@ const IndexRoot = () => {
   const toggleSystem = async () => {
     if (!isSystemActive) {
       try {
+        setIsSystemActive(true) // Instant UI feedback
+        isConnectingRef.current = true
         await irisService.connect()
-        setIsSystemActive(true)
+        isConnectingRef.current = false
         setIsMicMuted(false)
         irisService.setMute(false)
       } catch (err: any) {
@@ -70,6 +73,7 @@ const IndexRoot = () => {
         } else {
           alert(`Connection failed: ${err.message}`)
         }
+        isConnectingRef.current = false
         setIsSystemActive(false)
       }
     } else {
@@ -243,7 +247,7 @@ const IndexRoot = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-black overflow-hidden relative border border-emerald-500/20 rounded-xl">
+    <div className="flex flex-col h-screen w-screen bg-black overflow-hidden relative border border-white/20 rounded-xl">
       <TitleBar />
       <div className="flex-1 relative">
         <APEX

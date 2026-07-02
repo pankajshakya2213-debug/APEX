@@ -69,9 +69,9 @@ export default function MacroManagementMenu({ loadMacroToCanvas }: MacroMenuProp
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsMainOpen(!isMainOpen)}
-        className={`flex h-10 items-center gap-2 rounded-lg border bg-white/[0.03] px-4 text-sm font-medium text-zinc-200 transition-colors cursor-pointer ${isMainOpen ? 'border-emerald-400/60' : 'border-white/10 hover:border-white/20'}`}
+        className={`flex h-10 items-center gap-2 rounded-lg border bg-white/[0.03] px-4 text-sm font-medium text-zinc-200 transition-colors cursor-pointer ${isMainOpen ? 'border-white/60' : 'border-white/10 hover:border-white/20'}`}
       >
-        <RiBrainLine className="text-emerald-500" />
+        <RiBrainLine className="text-white" />
         Macros ({workflows.length})
         <RiArrowDropDownLine
           size={18}
@@ -97,7 +97,7 @@ export default function MacroManagementMenu({ loadMacroToCanvas }: MacroMenuProp
                 onClick={() => handleEdit(macro)}
                 className="w-full text-left flex flex-col gap-1 p-3 rounded-lg hover:bg-white/[0.04] group cursor-pointer border border-transparent hover:border-white/10"
               >
-                <span className="text-sm font-medium text-zinc-100 group-hover:text-emerald-300">
+                <span className="text-sm font-medium text-zinc-100 group-hover:text-white">
                   {macro.name}
                 </span>
                 <span className="text-[10px] text-zinc-600">

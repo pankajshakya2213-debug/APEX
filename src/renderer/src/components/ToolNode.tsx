@@ -20,7 +20,7 @@ export const getIcon = (name: string, size = 16) => {
   if (name.includes('mobile') || name.includes('whatsapp'))
     return <RiPhoneLine size={size} className="text-blue-400" />
   if (name.includes('terminal') || name.includes('code') || name.includes('app'))
-    return <RiTerminalBoxLine size={size} className="text-emerald-400" />
+    return <RiTerminalBoxLine size={size} className="text-white" />
   if (name.includes('web') || name.includes('search') || name.includes('research'))
     return <RiGlobalLine size={size} className="text-cyan-400" />
   if (name.includes('type') || name.includes('shortcut') || name.includes('sequence'))
@@ -69,7 +69,7 @@ export default function ToolNode({ data, id }: any) {
           type="target"
           position={Position.Left}
           id="target-left"
-          className="w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#141719] -ml-1.5 z-50 hover:bg-white transition-colors"
+          className="w-3 h-3 bg-white rounded-full border-2 border-[#141719] -ml-1.5 z-50 hover:bg-white transition-colors"
         />
       )}
       {isWait && (
@@ -78,13 +78,13 @@ export default function ToolNode({ data, id }: any) {
             type="target"
             position={Position.Left}
             id="target-left"
-            className="w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#141719] -ml-1.5 z-50 hover:bg-white transition-colors"
+            className="w-3 h-3 bg-white rounded-full border-2 border-[#141719] -ml-1.5 z-50 hover:bg-white transition-colors"
           />
           <Handle
             type="target"
             position={Position.Top}
             id="target-top"
-            className="w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#141719] -mt-1.5 z-50 hover:bg-white transition-colors"
+            className="w-3 h-3 bg-white rounded-full border-2 border-[#141719] -mt-1.5 z-50 hover:bg-white transition-colors"
           />
         </>
       )}
@@ -111,7 +111,7 @@ export default function ToolNode({ data, id }: any) {
         >
           <button
             onClick={() => openParameterEditor(id)}
-            className="text-zinc-400 hover:text-emerald-300 bg-white/[0.03] p-1.5 rounded-md border border-white/10 transition-colors active:scale-95"
+            className="text-zinc-400 hover:text-white bg-white/[0.03] p-1.5 rounded-md border border-white/10 transition-colors active:scale-95"
             title="Edit Parameters"
           >
             <RiEditBoxLine size={14} />
@@ -131,7 +131,7 @@ export default function ToolNode({ data, id }: any) {
           type="source"
           position={Position.Bottom}
           id="source-bottom"
-          className="w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#141719] -mb-1.5 z-50"
+          className="w-3 h-3 bg-white rounded-full border-2 border-[#141719] -mb-1.5 z-50"
         />
       )}
       {isWait && (
@@ -140,13 +140,13 @@ export default function ToolNode({ data, id }: any) {
             type="source"
             position={Position.Right}
             id="source-right"
-            className="w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#141719] -mr-1.5 z-50"
+            className="w-3 h-3 bg-white rounded-full border-2 border-[#141719] -mr-1.5 z-50"
           />
           <Handle
             type="source"
             position={Position.Bottom}
             id="source-bottom"
-            className="w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#141719] -mb-1.5 z-50"
+            className="w-3 h-3 bg-white rounded-full border-2 border-[#141719] -mb-1.5 z-50"
           />
         </>
       )}
@@ -155,7 +155,7 @@ export default function ToolNode({ data, id }: any) {
           type="source"
           position={Position.Right}
           id="source-right"
-          className="w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#141719] -mr-1.5 z-50"
+          className="w-3 h-3 bg-white rounded-full border-2 border-[#141719] -mr-1.5 z-50"
         />
       )}
     </div>

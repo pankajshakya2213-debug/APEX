@@ -121,7 +121,7 @@ const AppSelector = ({ value, onChange }: { value: string; onChange: (val: strin
           placeholder="Search installed apps..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-[#09090b] border border-[#27272a] rounded-md text-xs py-2 pl-9 pr-3 text-white outline-none focus:border-emerald-500 transition-colors placeholder-zinc-700"
+          className="w-full bg-[#09090b] border border-[#27272a] rounded-md text-xs py-2 pl-9 pr-3 text-white outline-none focus:border-white/30 transition-colors placeholder-zinc-700"
         />
       </div>
 
@@ -138,7 +138,7 @@ const AppSelector = ({ value, onChange }: { value: string; onChange: (val: strin
           const AppRow = (
             <div
               onClick={() => onChange(app.name)}
-              className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-300 transform active:scale-95 group ${isSelected ? 'bg-emerald-500/15 border border-emerald-500/60 shadow-[0_0_15px_rgba(16,185,129,0.15)] order-first' : 'hover:bg-[#18181b] border border-transparent hover:border-white/5'}`}
+              className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-300 transform active:scale-95 group ${isSelected ? 'bg-white/15 border border-white/60 shadow-[0_0_15px_rgba(255,255,255,0.15)] order-first' : 'hover:bg-[#18181b] border border-transparent hover:border-white/5'}`}
             >
               <div className="flex items-center gap-3 overflow-hidden">
                 <div
@@ -147,14 +147,14 @@ const AppSelector = ({ value, onChange }: { value: string; onChange: (val: strin
                   <SmartIcon name={app.name} />
                 </div>
                 <span
-                  className={`text-xs font-bold truncate ${isSelected ? 'text-emerald-400' : 'text-zinc-300'}`}
+                  className={`text-xs font-bold truncate ${isSelected ? 'text-white' : 'text-zinc-300'}`}
                 >
                   {app.name}
                 </span>
               </div>
               {isSelected && (
                 <RiCheckLine
-                  className="text-emerald-500 shrink-0 mx-2 animate-in zoom-in-50 duration-200"
+                  className="text-white shrink-0 mx-2 animate-in zoom-in-50 duration-200"
                   size={18}
                 />
               )}
@@ -200,7 +200,7 @@ export default function ParameterEditorDrawer({ nodeData, updateNodeInputs, clos
   return (
     <div className="absolute top-0 right-0 w-80 h-full bg-[#111113] border-l border-[#27272a] shadow-2xl flex flex-col z-50 animate-in slide-in-from-right-8 duration-200">
       <div className="p-4 border-b border-[#27272a] flex justify-between items-center bg-[#18181b]">
-        <span className="text-xs font-bold tracking-widest text-emerald-400 uppercase">
+        <span className="text-xs font-bold tracking-widest text-white uppercase">
           Configure Module
         </span>
         <button
@@ -226,7 +226,7 @@ export default function ParameterEditorDrawer({ nodeData, updateNodeInputs, clos
           <input
             type="text"
             placeholder="e.g., 'Boot up Dev Server'"
-            className="bg-[#09090b] border border-[#27272a] rounded-md text-xs p-2.5 text-white outline-none focus:border-emerald-500 transition-colors placeholder-zinc-700 shadow-inner"
+            className="bg-[#09090b] border border-[#27272a] rounded-md text-xs p-2.5 text-white outline-none focus:border-white/30 transition-colors placeholder-zinc-700 shadow-inner"
             value={localComment}
             onChange={(e) => setLocalComment(e.target.value)}
           />
@@ -235,7 +235,7 @@ export default function ParameterEditorDrawer({ nodeData, updateNodeInputs, clos
         <div className="h-px w-full bg-[#27272a]" />
 
         <div className="flex flex-col gap-4">
-          <h4 className="text-[10px] font-bold tracking-widest text-emerald-500 uppercase">
+          <h4 className="text-[10px] font-bold tracking-widest text-white uppercase">
             Parameters
           </h4>
 
@@ -253,7 +253,7 @@ export default function ParameterEditorDrawer({ nodeData, updateNodeInputs, clos
                   />
                 ) : prop.enum ? (
                   <select
-                    className="bg-[#09090b] border border-[#27272a] rounded-md text-xs p-2.5 text-white outline-none focus:border-emerald-500 transition-colors cursor-pointer w-full"
+                    className="bg-[#09090b] border border-[#27272a] rounded-md text-xs p-2.5 text-white outline-none focus:border-white/30 transition-colors cursor-pointer w-full"
                     value={localInputs[key] || ''}
                     onChange={(e) => handleInputChange(key, e.target.value)}
                   >
@@ -268,7 +268,7 @@ export default function ParameterEditorDrawer({ nodeData, updateNodeInputs, clos
                   <input
                     type={prop.type === 'NUMBER' ? 'number' : 'text'}
                     placeholder={prop.description || ''}
-                    className="bg-[#09090b] border border-[#27272a] rounded-md text-xs p-2.5 text-white outline-none focus:border-emerald-500 transition-colors placeholder-zinc-700 font-mono shadow-inner w-full"
+                    className="bg-[#09090b] border border-[#27272a] rounded-md text-xs p-2.5 text-white outline-none focus:border-white/30 transition-colors placeholder-zinc-700 font-mono shadow-inner w-full"
                     value={localInputs[key] || ''}
                     onChange={(e) => handleInputChange(key, e.target.value)}
                   />
@@ -286,7 +286,7 @@ export default function ParameterEditorDrawer({ nodeData, updateNodeInputs, clos
       <div className="p-4 border-t border-[#27272a] bg-[#18181b]">
         <button
           onClick={handleSave}
-          className="w-full bg-emerald-600 hover:bg-emerald-500 text-black py-2.5 rounded-lg text-[11px] font-black tracking-widest transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full bg-white hover:bg-white text-black py-2.5 rounded-lg text-[11px] font-black tracking-widest transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] flex items-center justify-center gap-2 cursor-pointer"
         >
           <RiSave3Line size={16} /> APPLY CHANGES
         </button>

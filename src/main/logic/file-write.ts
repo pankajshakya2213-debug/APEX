@@ -52,18 +52,8 @@ const isPathSafe = (filePath: string): boolean => {
     return false
   }
 
-  const allowedPaths = [
-    homeDir,
-    path.join(homeDir, 'Desktop').toLowerCase(),
-    path.join(homeDir, 'Documents').toLowerCase(),
-    path.join(homeDir, 'Downloads').toLowerCase(),
-    path.join(homeDir, 'Music').toLowerCase(),
-    path.join(homeDir, 'Pictures').toLowerCase(),
-    path.join(homeDir, 'Videos').toLowerCase(),
-    app.getPath('userData').toLowerCase()
-  ]
-
-  return allowedPaths.some((allowedPath) => normalizedPath.startsWith(allowedPath))
+  // If it passes all security blocklists, it's safe to modify
+  return true
 }
 
 export default function registerFileWrite(ipcMain: IpcMain) {

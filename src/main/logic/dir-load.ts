@@ -40,44 +40,34 @@ const getFileType = (name: string, isDirectory: boolean) => {
   return 'unknown'
 }
 
-const getSystemPath = (name: any) => {
-  // Manually set paths for SHAKY's system
-  switch (name) {
-    case 'desktop':
-      return 'C:\\Users\\SHAKY\\OneDrive\\Desktop'
-    case 'documents':
-      return 'C:\\Users\\SHAKY\\OneDrive\\Documents'
-    case 'downloads':
-      return 'C:\\Users\\SHAKY\\Downloads'
-    case 'music':
-      return 'C:\\Users\\SHAKY\\Music'
-    case 'pictures':
-      return 'C:\\Users\\SHAKY\\OneDrive\\Pictures'
-    case 'videos':
-      return 'C:\\Users\\SHAKY\\Videos'
-    case 'home':
-      return 'C:\\Users\\SHAKY'
-    case 'c':
-    case 'c:':
-    case 'drive':
-    case 'root':
-      return 'C:\\'
-    case 'onedrive':
-      return 'C:\\Users\\SHAKY\\OneDrive'
-    case 'appdata':
-      return 'C:\\Users\\SHAKY\\AppData\\Roaming'
-    case 'localappdata':
-      return 'C:\\Users\\SHAKY\\AppData\\Local'
-    case 'temp':
-      return 'C:\\Users\\SHAKY\\AppData\\Local\\Temp'
-    case 'programfiles':
-      return 'C:\\Program Files'
-    case 'programfilesx86':
-      return 'C:\\Program Files (x86)'
-    case 'windows':
-      return 'C:\\Windows'
-    default:
-      return 'C:\\Users\\SHAKY'
+const getSystemPath = (name: string) => {
+  try {
+    return app.getPath(name as any)
+  } catch (e) {
+    const home = os.homedir()
+    switch (name.toLowerCase()) {
+      case 'desktop':
+        return path.join(home, 'Desktop')
+      case 'documents':
+        return path.join(home, 'Documents')
+      case 'downloads':
+        return path.join(home, 'Downloads')
+      case 'music':
+        return path.join(home, 'Music')
+      case 'pictures':
+        return path.join(home, 'Pictures')
+      case 'videos':
+        return path.join(home, 'Videos')
+      case 'home':
+        return home
+      case 'c':
+      case 'c:':
+      case 'drive':
+      case 'root':
+        return os.platform() === 'win32' ? 'C:\\' : '/'
+      default:
+        return home
+    }
   }
 }
 

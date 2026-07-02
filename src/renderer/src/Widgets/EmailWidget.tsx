@@ -114,18 +114,18 @@ export default function EmailWidget() {
 
   return (
     <div className="fixed inset-0 z-9050 flex items-center justify-center bg-black/90 backdrop-blur-md p-10 animate-in fade-in zoom-in duration-300">
-      <div className="relative w-full max-w-5xl h-[85vh] border-2 border-emerald-500/50 rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(16,185,129,0.15)] bg-zinc-950 flex flex-col">
+      <div className="relative w-full max-w-5xl h-[85vh] border-2 border-white/50 rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(255,255,255,0.15)] bg-zinc-950 flex flex-col">
         <div className="flex items-center justify-between p-6 border-b border-white/5 bg-black/50 shrink-0 z-10">
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={openInbox}
-              className="px-3 py-2 rounded-full bg-white/5 hover:bg-emerald-500/20 text-zinc-300 hover:text-emerald-200 border border-white/10"
+              className="px-3 py-2 rounded-full bg-white/5 hover:bg-white/20 text-zinc-300 hover:text-white border border-white/10"
             >
               INBOX
             </button>
             <button
               onClick={startCompose}
-              className="px-3 py-2 rounded-full bg-white/5 hover:bg-emerald-500/20 text-zinc-300 hover:text-emerald-200 border border-white/10"
+              className="px-3 py-2 rounded-full bg-white/5 hover:bg-white/20 text-zinc-300 hover:text-white border border-white/10"
             >
               COMPOSE
             </button>
@@ -136,13 +136,13 @@ export default function EmailWidget() {
                     setSelectedEmail(null)
                     setIsComposeMode(false)
                   }}
-                  className="p-3 bg-white/5 hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-400 rounded-xl transition-all"
+                  className="p-3 bg-white/5 hover:bg-white/20 text-zinc-400 hover:text-white rounded-xl transition-all"
                 >
                   <RiArrowLeftLine size={24} />
                 </button>
               ) : (
-                <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                  <RiMailSendLine className="text-emerald-400" size={24} />
+                <div className="p-3 bg-white/10 rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                  <RiMailSendLine className="text-white" size={24} />
                 </div>
               )}
             </div>
@@ -184,13 +184,13 @@ export default function EmailWidget() {
                       value={composeTo}
                       onChange={(e) => setComposeTo(e.target.value)}
                       placeholder="To"
-                      className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none"
+                      className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-white/30 focus:outline-none"
                     />
                     <input
                       value={composeSubject}
                       onChange={(e) => setComposeSubject(e.target.value)}
                       placeholder="Subject"
-                      className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none"
+                      className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-white/30 focus:outline-none"
                     />
                   </div>
 
@@ -198,14 +198,14 @@ export default function EmailWidget() {
                     value={composeBody}
                     onChange={(e) => setComposeBody(e.target.value)}
                     placeholder="Message body"
-                    className="w-full min-h-[260px] resize-none bg-zinc-950 border border-white/10 rounded-3xl px-4 py-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none"
+                    className="w-full min-h-[260px] resize-none bg-zinc-950 border border-white/10 rounded-3xl px-4 py-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-white/30 focus:outline-none"
                   />
 
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={handleSend}
-                        className="px-5 py-3 rounded-2xl bg-emerald-500 text-black font-semibold hover:bg-emerald-400 transition-all"
+                        className="px-5 py-3 rounded-2xl bg-white text-black font-semibold hover:bg-white transition-all"
                       >
                         Send Email
                       </button>
@@ -250,19 +250,19 @@ export default function EmailWidget() {
                       <div
                         key={email.id}
                         onClick={() => setSelectedEmail(email)}
-                        className="group p-5 bg-white-[0.02] hover:bg-white-[0.05] border border-white/5 hover:border-emerald-500/30 rounded-2xl transition-all cursor-pointer relative overflow-hidden"
+                        className="group p-5 bg-white-[0.02] hover:bg-white-[0.05] border border-white/5 hover:border-white/30 rounded-2xl transition-all cursor-pointer relative overflow-hidden"
                       >
-                        <div className="absolute inset-0 bg-linear-to-r from-emerald-500/0 via-emerald-500/0 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute inset-0 bg-linear-to-r from-white/0 via-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                         <div className="relative z-10 flex flex-col gap-3">
                           <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-2 text-emerald-400 text-xs font-mono bg-emerald-400/10 px-3 py-1.5 rounded-md border border-emerald-400/20 max-w-[60%]">
+                            <div className="flex items-center gap-2 text-white text-xs font-mono bg-white/10 px-3 py-1.5 rounded-md border border-white/20 max-w-[60%]">
                               <RiUser3Line size={14} className="shrink-0" />
                               <span className="truncate">{cleanSender(email.from)}</span>
                             </div>
                             <div className="flex items-center gap-3">
                               {email.attachments.length > 0 && (
-                                <div className="flex items-center gap-1 text-emerald-500/70">
+                                <div className="flex items-center gap-1 text-white">
                                   <RiAttachment2 size={14} />
                                   <span className="text-[10px] font-mono">
                                     {email.attachments.length}
@@ -322,9 +322,9 @@ export default function EmailWidget() {
                       {selectedEmail.attachments.map((file, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-lg hover:border-emerald-500/50 transition-colors cursor-default"
+                          className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-lg hover:border-white/50 transition-colors cursor-default"
                         >
-                          <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-md">
+                          <div className="p-2 bg-white/20 text-white rounded-md">
                             <RiAttachment2 size={16} />
                           </div>
                           <div className="flex flex-col">

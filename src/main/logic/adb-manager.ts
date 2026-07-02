@@ -18,6 +18,14 @@ type ActiveDevice = {
 
 let activeDevice: ActiveDevice | null = null
 
+type AdbDeviceState = 'device' | 'unauthorized' | 'offline' | 'unknown'
+
+type ParsedAdbDevice = {
+  serial: string
+  state: AdbDeviceState
+  raw: string
+}
+
 export default function registerAdbHandlers(ipcMain: IpcMain) {
   const getAdbPath = () => {
     if (app.isPackaged) {
@@ -37,6 +45,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
   let isMonitoring = false
   const failedAttempts = new Map<string, number>() // IP -> timestamp of last failure
   let excludedIp: string | null = null // IP that was manually disconnected this session
+  let lastUsbPromotionAttempt = 0
   let autoConnectPaused = false
 
   const getActiveTarget = () => {
@@ -46,15 +55,63 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     return ''
   }
 
-  const getUsbModel = async (serial: string) => {
+  const parseAdbDevices = (stdout: string): ParsedAdbDevice[] => {
+    return stdout
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('List of'))
+      .map((line) => {
+        const parts = line.split(/\s+/)
+        const state = ['device', 'unauthorized', 'offline'].includes(parts[1])
+          ? (parts[1] as AdbDeviceState)
+          : 'unknown'
+        return { serial: parts[0], state, raw: line }
+      })
+  }
+
+  const getConnectedDevices = async () => {
+    const { stdout } = await execAsync(`${adb} devices -l`, { timeout: 8000 })
+    return parseAdbDevices(stdout)
+  }
+
+  const getDeviceModel = async (serial: string, fallback = 'ANDROID DEVICE') => {
     try {
       const { stdout } = await execAsync(`${adb} -s ${serial} shell getprop ro.product.model`, {
         timeout: 4000
       })
-      return stdout.trim().toUpperCase() || 'USB DEVICE'
+      return stdout.trim().toUpperCase() || fallback
     } catch (e) {
-      return 'USB DEVICE'
+      return fallback
     }
+  }
+
+  const verifyTarget = async (target: string) => {
+    try {
+      await execAsync(`${adb} ${target} shell echo iris-ready`, { timeout: 5000 })
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
+  const clearInactiveActiveDevice = async () => {
+    const target = getActiveTarget()
+    if (!target) {
+      activeDevice = null
+      return false
+    }
+
+    const isAlive = await verifyTarget(target)
+    if (!isAlive) {
+      activeDevice = null
+      emitAutoConnected()
+      return false
+    }
+    return true
+  }
+
+  const getUsbModel = async (serial: string) => {
+    return getDeviceModel(serial, 'USB DEVICE')
   }
 
   const emitAutoConnected = () => {
@@ -63,7 +120,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     })
   }
 
-  const saveDeviceToHistory = async (ip: string, port: string, model: string) => {
+  const saveDeviceToHistory = async (ip: string, port: string, model: string, name?: string) => {
     try {
       if (!existsSync(dirPath)) {
         await fs.mkdir(dirPath, { recursive: true })
@@ -77,8 +134,15 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
         }
       } catch (e) {}
 
-      const existingIndex = history.findIndex((d) => d.ip === ip)
-      const deviceData = { ip, port, model, lastConnected: new Date().toISOString() }
+      const existingIndex = history.findIndex((d) => d.ip === ip && String(d.port) === String(port))
+      const displayName = (name || model || 'ANDROID DEVICE').trim()
+      const deviceData = {
+        ip,
+        port,
+        model,
+        name: displayName,
+        lastConnected: new Date().toISOString()
+      }
 
       if (existingIndex > -1) {
         history[existingIndex] = deviceData
@@ -89,117 +153,270 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     } catch (e) {}
   }
 
-  const promoteUsbDeviceToWifi = async (serial: string, model: string) => {
-    const ip = await getDeviceIP(serial)
-    if (!ip || ip === excludedIp) return false
+  const readDeviceHistory = async () => {
+    try {
+      if (!existsSync(historyPath)) return []
+      const file = await fs.readFile(historyPath, 'utf-8')
+      return JSON.parse(file)
+    } catch (e) {
+      return []
+    }
+  }
 
-    const lastFailed = failedAttempts.get(ip) || 0
-    if (Date.now() - lastFailed < 60000) return false
+  const connectSavedWirelessDevice = async () => {
+    const history = await readDeviceHistory()
+    const savedDevices = [...history].reverse()
+
+    for (const device of savedDevices) {
+      const ip = String(device.ip || '').trim()
+      const port = String(device.port || '5555').trim()
+      if (!ip || ip === excludedIp) continue
+
+      const lastFailed = failedAttempts.get(ip) || 0
+      if (Date.now() - lastFailed < 30000) continue
+
+      try {
+        const { stdout } = await execAsync(`${adb} connect ${ip}:${port}`, { timeout: 7000 })
+        const connected =
+          stdout.toLowerCase().includes('connected') ||
+          stdout.toLowerCase().includes('already connected')
+
+        if (connected && (await verifyTarget(`-s ${ip}:${port}`))) {
+          const model = await getDeviceModel(`${ip}:${port}`, device.model || 'ANDROID DEVICE')
+          activeDevice = { id: `${ip}:${port}`, mode: 'wifi', ip, port, model }
+          failedAttempts.delete(ip)
+          await saveDeviceToHistory(ip, port, model)
+          emitAutoConnected()
+          console.log(`[ADB] Reconnected saved cable-free bridge at ${ip}:${port}`)
+          return true
+        }
+
+        failedAttempts.set(ip, Date.now())
+      } catch (e) {
+        failedAttempts.set(ip, Date.now())
+      }
+    }
+
+    return false
+  }
+
+  const getHostGatewayIPs = async () => {
+    const candidates: string[] = []
+    const addCandidate = (ip?: string | null) => {
+      const cleanIp = (ip || '').trim()
+      if (
+        cleanIp &&
+        /^\d{1,3}(\.\d{1,3}){3}$/.test(cleanIp) &&
+        cleanIp !== '0.0.0.0' &&
+        cleanIp !== '127.0.0.1' &&
+        !candidates.includes(cleanIp)
+      ) {
+        candidates.push(cleanIp)
+      }
+    }
+
+    if (process.platform === 'win32') {
+      try {
+        const { stdout } = await execAsync(
+          `powershell.exe -NoProfile -Command "Get-NetRoute -DestinationPrefix '0.0.0.0/0' | Sort-Object RouteMetric | Select-Object -ExpandProperty NextHop"`,
+          { timeout: 5000 }
+        )
+        stdout.split(/\r?\n/).forEach(addCandidate)
+      } catch (e) {}
+
+      try {
+        const { stdout } = await execAsync(`ipconfig`, { timeout: 5000 })
+        const gatewayMatches = [
+          ...stdout.matchAll(/Default Gateway[ .]*:\s*(\d+\.\d+\.\d+\.\d+)/gi)
+        ]
+        gatewayMatches.forEach((match) => addCandidate(match[1]))
+      } catch (e) {}
+    } else {
+      try {
+        const { stdout } = await execAsync(`ip route show default`, { timeout: 5000 })
+        const gatewayMatches = [...stdout.matchAll(/\bvia\s+(\d+\.\d+\.\d+\.\d+)/g)]
+        gatewayMatches.forEach((match) => addCandidate(match[1]))
+      } catch (e) {}
+    }
+
+    return candidates
+  }
+
+  const promoteUsbDeviceToWifi = async (serial: string, model: string) => {
+    const ips = [...(await getDeviceIPs(serial)), ...(await getHostGatewayIPs())].filter(
+      (ip, index, all) => all.indexOf(ip) === index
+    )
+    if (ips.length === 0) return false
+
+    const candidateIps = ips.filter((ip) => {
+      if (ip === excludedIp) return false
+      const lastFailed = failedAttempts.get(ip) || 0
+      return Date.now() - lastFailed >= 60000
+    })
+
+    if (candidateIps.length === 0) return false
 
     try {
-      console.log(`[ADB] USB linked. Preparing cable-free bridge at ${ip}:5555...`)
+      console.log(`[ADB] USB linked. Preparing cable-free bridge...`)
       await execAsync(`${adb} -s ${serial} tcpip 5555`, { timeout: 8000 })
-      await new Promise((r) => setTimeout(r, 1800))
 
-      const { stdout: connectOut } = await execAsync(`${adb} connect ${ip}:5555`, {
-        timeout: 8000
-      })
+      for (let attempt = 1; attempt <= 5; attempt++) {
+        await new Promise((r) => setTimeout(r, attempt === 1 ? 1800 : 1200))
 
-      if (
-        connectOut.toLowerCase().includes('connected') ||
-        connectOut.toLowerCase().includes('already connected')
-      ) {
-        const isVerified = await verifyWirelessLink(ip)
-        if (isVerified) {
-          failedAttempts.delete(ip)
-          excludedIp = null
-          activeDevice = { id: `${ip}:5555`, mode: 'wifi', ip, port: '5555', model }
-          await saveDeviceToHistory(ip, '5555', model)
-          emitAutoConnected()
-          console.log(`[ADB] Cable-free bridge ready at ${ip}:5555`)
-          return true
+        for (const ip of candidateIps) {
+          console.log(`[ADB] Trying cable-free bridge at ${ip}:5555...`)
+          try {
+            const { stdout: connectOut } = await execAsync(`${adb} connect ${ip}:5555`, {
+              timeout: 8000
+            })
+
+            if (
+              connectOut.toLowerCase().includes('connected') ||
+              connectOut.toLowerCase().includes('already connected')
+            ) {
+              const isVerified = await verifyWirelessLink(ip)
+              if (isVerified) {
+                failedAttempts.delete(ip)
+                excludedIp = null
+                activeDevice = { id: `${ip}:5555`, mode: 'wifi', ip, port: '5555', model }
+                await saveDeviceToHistory(ip, '5555', model)
+                emitAutoConnected()
+                console.log(`[ADB] Cable-free bridge ready at ${ip}:5555`)
+                return true
+              }
+            }
+
+            if (attempt === 5) failedAttempts.set(ip, Date.now())
+          } catch (e) {
+            if (attempt === 5) failedAttempts.set(ip, Date.now())
+          }
         }
       }
 
-      failedAttempts.set(ip, Date.now())
       return false
     } catch (e: any) {
       console.warn(`[ADB] Cable-free bridge failed: ${e.message}`)
-      failedAttempts.set(ip, Date.now())
+      candidateIps.forEach((ip) => failedAttempts.set(ip, Date.now()))
       return false
     }
   }
 
   const connectFirstUsbDevice = async () => {
-    const { stdout } = await execAsync(`${adb} devices -l`)
-    const lines = stdout.split('\n').filter((l) => l.trim() && !l.startsWith('List of'))
-    const usbDevice = lines.find(
-      (l) =>
-        !l.includes(':5555') &&
-        l.includes('device') &&
-        !l.includes('offline') &&
-        !l.includes('unauthorized')
-    )
+    await execAsync(`${adb} start-server`, { timeout: 8000 })
+    const devices = await getConnectedDevices()
+    const usbDevice = devices.find((d) => !d.serial.includes(':') && d.state === 'device')
 
     if (!usbDevice) {
+      const unauthorized = devices.find(
+        (d) => !d.serial.includes(':') && d.state === 'unauthorized'
+      )
+      if (unauthorized) {
+        return {
+          success: false,
+          error: 'Phone detected but not authorized. Unlock it and tap "Allow USB debugging".'
+        }
+      }
+
+      const offline = devices.find((d) => !d.serial.includes(':') && d.state === 'offline')
+      if (offline) {
+        return {
+          success: false,
+          error: 'Phone is offline in ADB. Replug the USB cable, unlock the phone, then try again.'
+        }
+      }
+
       return {
         success: false,
-        error: 'No authorized USB device found. Enable USB debugging and accept the prompt on your phone.'
+        error:
+          'No authorized USB device found. Enable USB debugging and accept the prompt on your phone.'
       }
     }
 
-    const serial = usbDevice.split(/\s+/)[0]
+    const serial = usbDevice.serial
     const model = await getUsbModel(serial)
     activeDevice = { id: serial, mode: 'usb', serial, model }
     excludedIp = null
     emitAutoConnected()
-    await promoteUsbDeviceToWifi(serial, model)
 
-    return { success: true, device: activeDevice }
+    const promoted = await promoteUsbDeviceToWifi(serial, model)
+
+    return {
+      success: true,
+      device: activeDevice,
+      wirelessReady: promoted,
+      warning: promoted
+        ? undefined
+        : 'USB is connected, but the cable-free bridge was not ready. Keep the laptop connected to this phone hotspot and try USB Connect again.'
+    }
   }
 
-  const getDeviceIP = async (serial: string) => {
+  const getDeviceIPs = async (serial: string) => {
+    const candidates: string[] = []
+    const addCandidate = (ip?: string | null) => {
+      const cleanIp = (ip || '').trim()
+      if (
+        cleanIp &&
+        /^\d{1,3}(\.\d{1,3}){3}$/.test(cleanIp) &&
+        cleanIp !== '127.0.0.1' &&
+        !candidates.includes(cleanIp)
+      ) {
+        candidates.push(cleanIp)
+      }
+    }
+
     try {
-      // Get all IPv4 addresses from the device
       const { stdout } = await execAsync(`${adb} -s ${serial} shell ip -f inet addr show`)
       const lines = stdout.split('\n')
-      
-      let bestIP: string | null = null
-      
-      // Priority 1: Check for common wireless interfaces (wlan0, ap0, eth0)
+
+      // Hotspot phones often expose the laptop-facing gateway on ap0/swlan*/wlan*.
+      const preferredInterfaces = /(ap\d+|swlan\d+|wlan\d+|wifi\d+|eth\d+|rndis\d+)/
       for (const line of lines) {
-        const match = line.match(/inet (\d+\.\d+\.\d+\.\d+).*scope global (wlan\d+|ap\d+|eth\d+)/)
+        const match = line.match(
+          new RegExp(
+            `inet (\\d+\\.\\d+\\.\\d+\\.\\d+).*scope global .*${preferredInterfaces.source}`
+          )
+        )
         if (match) {
-          return match[1]
+          addCandidate(match[1])
         }
       }
-      
-      // Priority 2: Any interface with a global scope IP that isn't loopback
+
       for (const line of lines) {
         if (line.includes('scope global') && !line.includes('lo')) {
           const match = line.match(/inet (\d+\.\d+\.\d+\.\d+)/)
-          if (match && match[1] !== '127.0.0.1') {
-            bestIP = match[1]
-            break
-          }
+          if (match) addCandidate(match[1])
         }
       }
-      
-      if (bestIP) return bestIP
+    } catch (e) {}
 
-      // Priority 3: Check system properties as a last resort
-      const props = ['dhcp.wlan0.ipaddress', 'dhcp.ap0.ipaddress', 'dhcp.eth0.ipaddress']
+    try {
+      const { stdout: routeOut } = await execAsync(`${adb} -s ${serial} shell ip route`, {
+        timeout: 4000
+      })
+      const srcMatches = [...routeOut.matchAll(/\bsrc\s+(\d+\.\d+\.\d+\.\d+)/g)]
+      srcMatches.forEach((match) => addCandidate(match[1]))
+    } catch (e) {}
+
+    try {
+      const props = [
+        'dhcp.ap0.ipaddress',
+        'dhcp.swlan0.ipaddress',
+        'dhcp.wlan0.ipaddress',
+        'dhcp.wifi.interface',
+        'dhcp.eth0.ipaddress'
+      ]
       for (const prop of props) {
         const { stdout: propOut } = await execAsync(`${adb} -s ${serial} shell getprop ${prop}`)
-        if (propOut.trim()) {
-          return propOut.trim()
-        }
+        addCandidate(propOut)
       }
+    } catch (e) {}
 
-      return null
-    } catch (e) {
-      return null
-    }
+    return candidates
+  }
+
+  const getDeviceIP = async (serial: string) => {
+    const ips = await getDeviceIPs(serial)
+    return ips[0] || null
   }
 
   const verifyWirelessLink = async (ip: string) => {
@@ -219,34 +436,48 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
 
     setInterval(async () => {
       try {
-        const { stdout } = await execAsync(`${adb} devices -l`)
-        const lines = stdout.split('\n').filter((l) => l.trim() && !l.startsWith('List of'))
-
-        const usbDevices = lines.filter(
-          (l) => !l.includes(':5555') && !l.includes('offline') && !l.includes('unauthorized')
+        const devices = await getConnectedDevices()
+        const usbDevices = devices.filter((d) => !d.serial.includes(':') && d.state === 'device')
+        const wirelessDevices = devices.filter(
+          (d) => d.serial.includes(':') && d.state === 'device'
         )
-        const wirelessDevices = lines.filter((l) => l.includes(':5555'))
+
+        if (activeDevice) {
+          const activeStillListed = devices.some(
+            (d) => d.serial === activeDevice?.id && d.state === 'device'
+          )
+          if (!activeStillListed) {
+            await clearInactiveActiveDevice()
+          } else if (
+            activeDevice.mode === 'usb' &&
+            activeDevice.serial &&
+            Date.now() - lastUsbPromotionAttempt > 30000
+          ) {
+            lastUsbPromotionAttempt = Date.now()
+            const promoted = await promoteUsbDeviceToWifi(
+              activeDevice.serial,
+              activeDevice.model || 'USB DEVICE'
+            )
+            if (promoted) return
+          }
+        }
 
         if (autoConnectPaused) return
-
-        if (activeDevice?.mode === 'usb' && activeDevice.serial) {
-          const stillConnected = usbDevices.some((line) => line.startsWith(activeDevice?.serial || ''))
-          if (!stillConnected) activeDevice = null
-        }
 
         if (!activeDevice && usbDevices.length > 0) {
           await connectFirstUsbDevice()
           return
         }
 
-        // SMART ADOPTION: If no active device, check if any wireless device matches history
+        // SMART ADOPTION: If no active device, check if any wireless device matches history.
+        // This runs only while auto-connect is not paused by a manual disconnect.
         if (!activeDevice && wirelessDevices.length > 0) {
           try {
-            const history = JSON.parse(await fs.readFile(historyPath, 'utf-8'))
+            const history = await readDeviceHistory()
             if (history.length > 0) {
               const lastUsed = history[history.length - 1]
-              const foundMatch = wirelessDevices.some(d => d.includes(lastUsed.ip))
-              
+              const foundMatch = wirelessDevices.some((d) => d.serial.includes(lastUsed.ip))
+
               if (foundMatch && lastUsed.ip !== excludedIp) {
                 const isVerified = await verifyWirelessLink(lastUsed.ip)
                 if (isVerified) {
@@ -268,7 +499,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
         if (activeDevice) return
 
         for (const line of usbDevices) {
-          const serial = line.split(/\s+/)[0]
+          const serial = line.serial
           const ip = await getDeviceIP(serial)
 
           if (ip) {
@@ -278,11 +509,11 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
             // Priority: Check if we are in a cooling period for this IP
             const lastFailed = failedAttempts.get(ip) || 0
             if (Date.now() - lastFailed < 60000) {
-              continue 
+              continue
             }
 
             // Check if already connected wirelessly
-            const isAlreadyConnected = wirelessDevices.some((d) => d.includes(ip))
+            const isAlreadyConnected = wirelessDevices.some((d) => d.serial.includes(ip))
 
             if (!isAlreadyConnected) {
               console.log(`[ADB] USB Device detected (${serial}). Initiating Handshake at ${ip}...`)
@@ -299,11 +530,15 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
                   excludedIp = null // Reset exclusion on successful handshake
 
                   if (!activeDevice) {
-                    activeDevice = { id: `${ip}:5555`, mode: 'wifi', ip, port: '5555' }
+                    const model = await getDeviceModel(`${ip}:5555`)
+                    activeDevice = { id: `${ip}:5555`, mode: 'wifi', ip, port: '5555', model }
+                    await saveDeviceToHistory(ip, '5555', model)
                     emitAutoConnected()
                   }
                 } else {
-                  console.warn(`[ADB] Connection to ${ip} established but failed data verification.`)
+                  console.warn(
+                    `[ADB] Connection to ${ip} established but failed data verification.`
+                  )
                   failedAttempts.set(ip, Date.now())
                   await execAsync(`${adb} disconnect ${ip}:5555`)
                 }
@@ -327,44 +562,26 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
 
   ipcMain.removeHandler('adb-get-history')
   ipcMain.handle('adb-get-history', async () => {
-    try {
-      if (!existsSync(historyPath)) return []
-      const file = await fs.readFile(historyPath, 'utf-8')
-      return JSON.parse(file)
-    } catch (e) {
-      return []
-    }
+    const history = await readDeviceHistory()
+    return history.sort(
+      (a: any, b: any) =>
+        new Date(b.lastConnected || 0).getTime() - new Date(a.lastConnected || 0).getTime()
+    )
   })
 
-  ipcMain.removeHandler('adb-delete-history-device')
-  ipcMain.handle('adb-delete-history-device', async (_, { ip, port }) => {
+  ipcMain.removeHandler('adb-save-device')
+  ipcMain.handle('adb-save-device', async (_, { ip, port = '5555', name, model }) => {
     try {
-      if (!existsSync(historyPath)) return { success: true, devices: [] }
-      const file = await fs.readFile(historyPath, 'utf-8')
-      const history = file ? JSON.parse(file) : []
-      const nextHistory = history.filter((device: any) => {
-        if (port) return !(device.ip === ip && String(device.port) === String(port))
-        return device.ip !== ip
-      })
-      await fs.mkdir(dirPath, { recursive: true })
-      await fs.writeFile(historyPath, JSON.stringify(nextHistory, null, 2))
+      const cleanIp = String(ip || '').trim()
+      const cleanPort = String(port || '5555').trim()
+      const cleanName = String(name || model || 'Saved Phone').trim()
 
-      const currentDevice = activeDevice
-      const isActiveDevice =
-        currentDevice !== null &&
-        currentDevice.ip === ip &&
-        (!port || String(currentDevice.port) === String(port))
-
-      if (isActiveDevice) {
-        autoConnectPaused = true
-        activeDevice = null
-        excludedIp = ip
-        try {
-          await execAsync(`${adb} disconnect ${ip}:${port || '5555'}`)
-        } catch (e) {}
+      if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(cleanIp) || !/^\d{2,5}$/.test(cleanPort)) {
+        return { success: false, error: 'Enter a valid phone IP address and ADB port.' }
       }
 
-      return { success: true, devices: nextHistory }
+      await saveDeviceToHistory(cleanIp, cleanPort, cleanName.toUpperCase(), cleanName)
+      return { success: true, devices: await readDeviceHistory() }
     } catch (e: any) {
       return { success: false, error: e.message }
     }
@@ -374,23 +591,40 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
   ipcMain.handle('adb-connect', async (_, { ip, port }) => {
     try {
       autoConnectPaused = false
-      const { stdout } = await execAsync(`${adb} connect ${ip}:${port}`)
+      const cleanIp = String(ip || '').trim()
+      const cleanPort = String(port || '5555').trim()
+      if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(cleanIp) || !/^\d{2,5}$/.test(cleanPort)) {
+        return { success: false, error: 'Enter a valid phone IP address and ADB port.' }
+      }
+
+      const { stdout } = await execAsync(`${adb} connect ${cleanIp}:${cleanPort}`, {
+        timeout: 10000
+      })
 
       if (
         stdout.toLowerCase().includes('connected to') ||
         stdout.toLowerCase().includes('already connected')
       ) {
-        activeDevice = { id: `${ip}:${port}`, mode: 'wifi', ip, port }
+        const target = `-s ${cleanIp}:${cleanPort}`
+        const verified = await verifyTarget(target)
+        if (!verified) {
+          activeDevice = null
+          return {
+            success: false,
+            error: 'ADB connected text was returned, but the phone did not respond to commands.'
+          }
+        }
+
+        activeDevice = { id: `${cleanIp}:${cleanPort}`, mode: 'wifi', ip: cleanIp, port: cleanPort }
         excludedIp = null // Reset exclusion on manual connect
 
         try {
-          const { stdout: modelOut } = await execAsync(
-            `${adb} -s ${ip}:${port} shell getprop ro.product.model`
-          )
-          await saveDeviceToHistory(ip, port, modelOut.trim().toUpperCase() || 'UNKNOWN DEVICE')
+          const model = await getDeviceModel(`${cleanIp}:${cleanPort}`, 'UNKNOWN DEVICE')
+          activeDevice.model = model
+          await saveDeviceToHistory(cleanIp, cleanPort, model)
         } catch (e) {}
 
-        return { success: true }
+        return { success: true, device: activeDevice }
       }
       return { success: false, error: stdout }
     } catch (e: any) {
@@ -454,7 +688,9 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     if (!target) return { success: false }
     try {
       if (action === 'camera') {
-        await execAsync(`${adb} ${target} shell am start -a android.media.action.STILL_IMAGE_CAMERA`)
+        await execAsync(
+          `${adb} ${target} shell am start -a android.media.action.STILL_IMAGE_CAMERA`
+        )
       } else if (action === 'wake') {
         await execAsync(`${adb} ${target} shell input keyevent KEYCODE_WAKEUP`)
       } else if (action === 'lock') {
@@ -496,7 +732,9 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
         storagePercent = parseInt(parts[4].replace('%', '')) || 0
       }
 
-      const { stdout: modelOut } = await execAsync(`${adb} ${target} shell getprop ro.product.model`)
+      const { stdout: modelOut } = await execAsync(
+        `${adb} ${target} shell getprop ro.product.model`
+      )
       const { stdout: osOut } = await execAsync(
         `${adb} ${target} shell getprop ro.build.version.release`
       )
@@ -523,7 +761,9 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       if (!target) return 'Error: You are not currently connected to any mobile device.'
       const { stdout: batOut } = await execAsync(`${adb} ${target} shell dumpsys battery`)
       const level = batOut.match(/level: (\d+)/)?.[1] || 'Unknown'
-      const { stdout: modelOut } = await execAsync(`${adb} ${target} shell getprop ro.product.model`)
+      const { stdout: modelOut } = await execAsync(
+        `${adb} ${target} shell getprop ro.product.model`
+      )
 
       return `I am currently linked to your ${modelOut.trim()}. The battery is at ${level}%.`
     } catch (e) {
@@ -540,7 +780,9 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       if (!target) return { success: false, error: 'No phone connected.' }
 
       if (packageName === 'android.media.action.STILL_IMAGE_CAMERA') {
-        await execAsync(`${adb} ${target} shell am start -a android.media.action.STILL_IMAGE_CAMERA`)
+        await execAsync(
+          `${adb} ${target} shell am start -a android.media.action.STILL_IMAGE_CAMERA`
+        )
         return { success: true }
       }
 
@@ -722,7 +964,9 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
         try {
           await execAsync(`${adb} ${target} shell svc bluetooth ${action}`, { timeout: 5000 })
         } catch (e) {
-          await execAsync(`${adb} ${target} shell cmd bluetooth_manager ${action}`, { timeout: 5000 })
+          await execAsync(`${adb} ${target} shell cmd bluetooth_manager ${action}`, {
+            timeout: 5000
+          })
         }
         return { success: true }
       }
@@ -779,6 +1023,9 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
 
   ipcMain.removeHandler('adb-get-status')
   ipcMain.handle('adb-get-status', async () => {
+    if (activeDevice) {
+      await clearInactiveActiveDevice()
+    }
     return activeDevice
   })
 }

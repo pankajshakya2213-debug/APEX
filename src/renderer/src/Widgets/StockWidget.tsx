@@ -24,7 +24,7 @@ export default function StockWidget() {
 
   if (!isVisible || !stock) return null
 
-  const c1 = stock.isPositive1 ? '#10b981' : '#ef4444'
+  const c1 = stock.isPositive1 ? '#ffffff' : '#ef4444'
   const c2 = stock.isPositive2 ? '#3b82f6' : '#f59e0b'
 
   const CustomTooltip = ({ active, payload, label }: any) => {

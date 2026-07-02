@@ -145,12 +145,17 @@ const GalleryView = () => {
   }
 
   return (
-    <div className="flex-1 bg-[#090b0c] h-full relative overflow-hidden font-sans flex flex-col text-zinc-100">
+    <div className="flex-1 bg-[#080a09] h-full relative overflow-hidden font-sans flex flex-col text-zinc-100">
+      {/* Ambient Background Glows */}
+      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
+      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+
       <div className="p-5 relative z-10 flex flex-col flex-1 overflow-hidden">
-        <div className="flex items-center justify-between shrink-0 rounded-xl border border-white/10 bg-[#101214] p-4 mb-5">
+        <div className="flex items-center justify-between shrink-0 rounded-xl border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-4 mb-5">
           <div className="flex items-center gap-3 text-zinc-100">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03]">
-              <RiImage2Line className="text-emerald-400" size={22} />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 bg-white/[0.03]">
+              <RiImage2Line className="text-white" size={22} />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-zinc-100">Gallery</h2>
@@ -158,13 +163,13 @@ const GalleryView = () => {
             </div>
           </div>
 
-          <div className="hidden text-xs font-medium text-zinc-300 bg-white/[0.03] px-3 py-2 rounded-lg border border-white/10 items-center gap-2">
-            <RiMagicLine size={14} className="text-emerald-400" /> {allImages.length} images
+          <div className="hidden text-xs font-medium text-zinc-300 bg-white/[0.03] px-3 py-2 rounded-lg border border-white/20 items-center gap-2">
+            <RiMagicLine size={14} className="text-white" /> {allImages.length} images
           </div>
         </div>
 
-        <div className="absolute bottom-24 right-8 z-20 flex items-center gap-2 rounded-lg border border-white/10 bg-[#101214] px-4 py-3 text-xs font-medium text-zinc-300 shadow-xl">
-          <RiMagicLine size={14} className="text-emerald-400" /> {allImages.length} images
+        <div className="absolute bottom-24 right-8 z-20 flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] px-4 py-3 text-xs font-medium text-zinc-300 shadow-xl">
+          <RiMagicLine size={14} className="text-white" /> {allImages.length} images
         </div>
 
         <div className="flex-1 overflow-y-auto scrollbar-small pr-2 min-h-0">
@@ -186,7 +191,7 @@ const GalleryView = () => {
                       setDirection(0) 
                       setSelectedImage(img)
                     }}
-                    className="group relative aspect-16/10 bg-black/40 rounded-xl border border-white/10 overflow-hidden hover:border-emerald-400/50 transition-colors cursor-pointer"
+                    className="group relative aspect-16/10 bg-black/40 rounded-xl border border-white/20 overflow-hidden hover:border-white/50 transition-colors cursor-pointer"
                   >
                     <img
                       src={img.url}
@@ -206,14 +211,14 @@ const GalleryView = () => {
                       <div className="absolute right-3 top-3 flex gap-2">
                         <button
                           onClick={(e) => openLocation(img.path, e)}
-                          className="p-2.5 bg-white/10 text-zinc-300 rounded-lg hover:bg-emerald-500 hover:text-black transition-colors border border-white/10"
+                          className="p-2.5 bg-white/10 text-zinc-300 rounded-lg hover:bg-white hover:text-black transition-colors border border-white/20"
                           title="Open location"
                         >
                           <RiFolderOpenLine size={14} />
                         </button>
                         <button
                           onClick={(e) => deleteImage(img.filename, e)}
-                          className="p-2.5 bg-white/10 text-zinc-300 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-white/10"
+                          className="p-2.5 bg-white/10 text-zinc-300 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-white/20"
                           title="Delete image"
                         >
                           <RiDeleteBinLine size={14} />
@@ -238,7 +243,7 @@ const GalleryView = () => {
           >
             <button
               onClick={() => setSelectedImage(null)}
-              className="cursor-pointer absolute top-8 right-8 p-3 bg-white/10 hover:bg-red-500/20 hover:text-red-300 rounded-lg text-zinc-300 transition-colors border border-white/10 z-50"
+              className="cursor-pointer absolute top-8 right-8 p-3 bg-white/10 hover:bg-red-500/20 hover:text-red-300 rounded-lg text-zinc-300 transition-colors border border-white/20 z-50"
             >
               <RiCloseLine size={24} />
             </button>
@@ -247,7 +252,7 @@ const GalleryView = () => {
               className="absolute left-0 top-0 bottom-0 w-24 md:w-40 z-40 flex items-center justify-start pl-8 group cursor-pointer"
               onClick={() => navigateImage(-1)}
             >
-              <div className="p-4 bg-white/10 group-hover:bg-white/20 text-zinc-300 rounded-lg transition-colors border border-white/10">
+              <div className="p-4 bg-white/10 group-hover:bg-white/20 text-zinc-300 rounded-lg transition-colors border border-white/20">
                 <RiArrowLeftSLine size={32} />
               </div>
             </div>
@@ -256,7 +261,7 @@ const GalleryView = () => {
               className="absolute right-0 top-0 bottom-0 w-24 md:w-40 z-40 flex items-center justify-end pr-8 group cursor-pointer"
               onClick={() => navigateImage(1)}
             >
-              <div className="p-4 bg-white/10 group-hover:bg-white/20 text-zinc-300 rounded-lg transition-colors border border-white/10">
+              <div className="p-4 bg-white/10 group-hover:bg-white/20 text-zinc-300 rounded-lg transition-colors border border-white/20">
                 <RiArrowRightSLine size={32} />
               </div>
             </div>
@@ -276,13 +281,13 @@ const GalleryView = () => {
                       x: { type: 'spring', stiffness: 300, damping: 35 },
                       opacity: { duration: 0.2 }
                     }}
-                    className="max-w-full max-h-[80vh] rounded-xl shadow-2xl border border-white/10 object-contain bg-[#111315]"
+                    className="max-w-full max-h-[80vh] rounded-xl shadow-2xl border border-white/20 object-contain bg-[#111315]"
                   />
                 </AnimatePresence>
               </div>
 
               <div className="absolute left-10 bottom-10 z-50 max-w-md animate-in slide-in-from-bottom-10 duration-300">
-                <div className="px-5 py-3 rounded-xl border border-white/10 bg-[#111315]/95">
+                <div className="px-5 py-3 rounded-xl border border-white/20 bg-[#111315]/95">
                   <h3 className="text-base font-semibold text-white mb-1 truncate max-w-md">
                     {selectedImage.displayName}
                   </h3>
@@ -297,14 +302,14 @@ const GalleryView = () => {
               <div className="absolute right-10 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-3">
                   <button
                     onClick={() => openLocation(selectedImage.path)}
-                    className="cursor-pointer flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-5 py-3 text-xs font-semibold text-zinc-200 transition-colors hover:bg-white/15"
+                    className="cursor-pointer flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-5 py-3 text-xs font-semibold text-zinc-200 transition-colors hover:bg-white/15"
                   >
                     <RiFolderOpenLine size={16} /> Open Folder
                   </button>
 
                   <button
                     onClick={() => saveCopy(selectedImage.path)}
-                    className="cursor-pointer flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-3 text-xs font-semibold text-black transition-colors hover:bg-emerald-400"
+                    className="cursor-pointer flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-xs font-semibold text-black transition-colors hover:bg-white"
                   >
                     <RiDownloadLine size={16} /> Save Copy
                   </button>

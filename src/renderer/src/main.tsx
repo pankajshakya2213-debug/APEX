@@ -60,7 +60,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
   if (status === 'checking') {
     return (
-      <div className="h-screen w-screen bg-[#050505] flex items-center justify-center text-[#10b981] font-mono text-sm tracking-widest uppercase">
+      <div className="h-screen w-screen bg-[#050505] flex items-center justify-center text-[#ffffff] font-mono text-sm tracking-widest uppercase">
         Initializing Secure Environment...
       </div>
     )

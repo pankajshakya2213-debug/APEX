@@ -74,21 +74,21 @@ export default function LiveCodingWidget() {
 
   return (
     <div className="absolute inset-0 z-999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-10">
-      <div className="w-full max-w-4xl h-[70vh] flex flex-col bg-[#0a0a0a] border border-emerald-500/30 rounded-xl shadow-[0_0_50px_rgba(16,185,129,0.1)] overflow-hidden">
+      <div className="w-full max-w-4xl h-[70vh] flex flex-col bg-[#0a0a0a] border border-white/30 rounded-xl shadow-[0_0_50px_rgba(255,255,255,0.1)] overflow-hidden">
         <div className="h-12 bg-black border-b border-white/5 flex items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Sparkles
-              className={`w-4 h-4 ${isGenerating ? 'text-emerald-400 animate-spin' : 'text-emerald-500'}`}
+              className={`w-4 h-4 ${isGenerating ? 'text-white animate-spin' : 'text-white'}`}
             />
-            <FileCode2 className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm font-mono text-emerald-100">{filename || 'Building...'}</span>
+            <FileCode2 className="w-4 h-4 text-white" />
+            <span className="text-sm font-mono text-white">{filename || 'Building...'}</span>
           </div>
 
           <div className="flex items-center gap-3">
             {!isGenerating && filePath && (
               <button
                 onClick={() => window.electron.ipcRenderer.invoke('open-in-vscode', filePath)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded text-xs font-mono text-emerald-300 transition cursor-pointer"
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 rounded text-xs font-mono text-white transition cursor-pointer"
               >
                 <ExternalLink className="w-3 h-3" /> OPEN IN VS CODE
               </button>

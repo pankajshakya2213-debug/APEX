@@ -163,10 +163,10 @@ export default function OracleWidget() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="w-full max-w-4xl bg-[#050505] border border-emerald-500/30 rounded-2xl shadow-[0_0_100px_rgba(16,185,129,0.15)] overflow-hidden flex flex-col relative"
+          className="w-full max-w-4xl bg-[#050505] border border-white/30 rounded-2xl shadow-[0_0_100px_rgba(255,255,255,0.15)] overflow-hidden flex flex-col relative"
         >
           <motion.div
-            className={`absolute top-0 left-0 h-0.5 z-10 transition-colors ${status === 'cancelled' ? 'bg-red-500' : 'bg-emerald-500'}`}
+            className={`absolute top-0 left-0 h-0.5 z-10 transition-colors ${status === 'cancelled' ? 'bg-red-500' : 'bg-white'}`}
             initial={{ width: '0%' }}
             animate={{
               width:
@@ -184,21 +184,21 @@ export default function OracleWidget() {
             }}
           />
 
-          <div className="h-16 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center justify-between px-8">
+          <div className="h-16 bg-white/10 border-b border-white/20 flex items-center justify-between px-8">
             <div className="flex items-center gap-4">
               {status === 'scanning' && (
-                <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+                <Loader2 className="w-6 h-6 text-white animate-spin" />
               )}
               {status === 'ingesting' && (
-                <Database className="w-6 h-6 text-emerald-400 animate-pulse" />
+                <Database className="w-6 h-6 text-white animate-pulse" />
               )}
               {status === 'thinking' && (
-                <BrainCircuit className="w-6 h-6 text-emerald-400 animate-pulse" />
+                <BrainCircuit className="w-6 h-6 text-white animate-pulse" />
               )}
-              {status === 'done' && <CheckCircle2 className="w-6 h-6 text-emerald-400" />}
+              {status === 'done' && <CheckCircle2 className="w-6 h-6 text-white" />}
               {status === 'cancelled' && <Octagon className="w-6 h-6 text-red-500" />}
               <span
-                className={`text-base font-black tracking-[0.2em] uppercase ${status === 'cancelled' ? 'text-red-500' : 'text-emerald-400'}`}
+                className={`text-base font-black tracking-[0.2em] uppercase ${status === 'cancelled' ? 'text-red-500' : 'text-white'}`}
               >
                 {status === 'scanning'
                   ? 'Scanning Folders'
@@ -224,7 +224,7 @@ export default function OracleWidget() {
               <motion.div layout className="flex flex-col gap-8">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <TerminalSquare className="w-5 h-5 text-emerald-500/50" />
+                    <TerminalSquare className="w-5 h-5 text-white" />
                     <span className="text-sm font-mono text-zinc-400 break-all line-clamp-1">
                       {path}
                     </span>
@@ -243,15 +243,15 @@ export default function OracleWidget() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Activity
-                        className={`w-5 h-5 ${status === 'ingesting' && !isPaused ? 'text-emerald-400 animate-pulse' : 'text-emerald-500/50'}`}
+                        className={`w-5 h-5 ${status === 'ingesting' && !isPaused ? 'text-white animate-pulse' : 'text-white'}`}
                       />
-                      <span className="text-[10px] font-bold tracking-widest text-emerald-500 uppercase">
+                      <span className="text-[10px] font-bold tracking-widest text-white uppercase">
                         {status === 'scanning'
                           ? 'Looking for files...'
                           : `Processing: ${currentFile || 'Loading...'}`}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-emerald-400">
+                    <div className="flex items-center gap-2 text-white">
                       <Percent className="w-5 h-5" />
                       <motion.span
                         className="text-xl font-black"
@@ -264,13 +264,13 @@ export default function OracleWidget() {
                   </div>
                   <div className="w-full h-3 bg-zinc-900 rounded-full overflow-hidden border border-zinc-800 relative">
                     <motion.div
-                      className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] rounded-full absolute top-0 left-0"
+                      className="h-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)] rounded-full absolute top-0 left-0"
                       initial={{ width: 0 }}
                       animate={{ width: `${percentRaw}%` }}
                       transition={{ ease: 'easeInOut', duration: 0.3 }}
                     />
                     <motion.div
-                      className="h-full bg-emerald-500/20 absolute top-0 left-0"
+                      className="h-full bg-white/20 absolute top-0 left-0"
                       animate={{
                         width:
                           targetTotalFiles > 0 ? `${(fileCount / targetTotalFiles) * 100}%` : '0%'
@@ -289,7 +289,7 @@ export default function OracleWidget() {
                       key={i + log}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="text-emerald-400/80 mb-2 flex items-start gap-3"
+                      className="text-white mb-2 flex items-start gap-3"
                     >
                       <span className="text-zinc-600 font-bold mt-0.5">&gt;</span>
                       <span className="break-all">{log}</span>
@@ -308,16 +308,16 @@ export default function OracleWidget() {
                     icon={Database}
                     label="Saved Vectors"
                     value={chunkCount}
-                    iconColor="text-emerald-500"
-                    valueColor="text-emerald-400"
+                    iconColor="text-white"
+                    valueColor="text-white"
                   />
                   <StatBox icon={Clock} label="Time Taken" textValue={formatTime(elapsedMs)} />
                   <StatBox
                     icon={Timer}
                     label="Time Left"
                     textValue={formatTime(etaMs)}
-                    iconColor="text-emerald-500"
-                    valueColor="text-emerald-400"
+                    iconColor="text-white"
+                    valueColor="text-white"
                     animate={status === 'ingesting' && !isPaused}
                   />
                 </div>
@@ -339,7 +339,7 @@ export default function OracleWidget() {
                   {message}
                 </p>
                 <div
-                  className={`mt-8 text-sm font-mono flex flex-col items-center gap-2 ${status === 'cancelled' ? 'text-red-500/50' : 'text-emerald-500/50'}`}
+                  className={`mt-8 text-sm font-mono flex flex-col items-center gap-2 ${status === 'cancelled' ? 'text-red-500/50' : 'text-white'}`}
                 >
                   {logStream.slice(-3).map((log, idx) => (
                     <span key={idx} className={status === 'thinking' ? 'animate-pulse' : ''}>
@@ -367,7 +367,7 @@ const StatBox = ({
   animate = false
 }: any) => (
   <div
-    className={`flex flex-col justify-center p-5 rounded-xl border ${animate ? 'border-emerald-500/20 bg-emerald-500/5' : 'bg-black/40 border-white/5'}`}
+    className={`flex flex-col justify-center p-5 rounded-xl border ${animate ? 'border-white/20 bg-white/5' : 'bg-black/40 border-white/5'}`}
   >
     <div className="flex items-center gap-2 mb-3">
       <Icon className={`w-4 h-4 ${iconColor}`} />

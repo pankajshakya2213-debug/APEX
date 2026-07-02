@@ -22,12 +22,12 @@ interface Note {
 const MarkdownComponents = {
   code({ node, inline, className, children, ...props }: any) {
     return !inline ? (
-      <div className="bg-black/50 rounded-lg p-3 my-2 border border-white/10 font-mono text-xs overflow-x-auto">
+      <div className="bg-black/50 rounded-lg p-3 my-2 border border-white/20 font-mono text-xs overflow-x-auto">
         <code {...props}>{children}</code>
       </div>
     ) : (
       <code
-        className="bg-white/10 px-1 py-0.5 rounded text-emerald-400 font-mono text-xs"
+        className="bg-white/10 px-1 py-0.5 rounded text-white font-mono text-xs"
         {...props}
       >
         {children}
@@ -116,19 +116,24 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
   }
 
   return (
-    <div className="flex h-full w-full bg-[#090b0c] relative overflow-hidden font-sans text-zinc-100">
+    <div className="flex h-full w-full bg-[#080a09] relative overflow-hidden font-sans text-zinc-100">
+      {/* Ambient Background Glows */}
+      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
+      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+
       <button
         onClick={startCreating}
-        className="absolute left-[calc(33.333333%+1.75rem)] bottom-24 z-20 flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-black shadow-xl transition-colors hover:bg-emerald-400 active:scale-95"
+        className="absolute left-[calc(33.333333%+1.75rem)] bottom-24 z-20 flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-black shadow-xl transition-colors hover:bg-white active:scale-95"
         title="New note"
       >
         <RiAddLine size={18} /> New Note
       </button>
       <div className="w-full h-full grid grid-cols-12 gap-5 p-5 relative z-10">
-        <div className="col-span-4 flex flex-col gap-4 h-full overflow-hidden rounded-xl border border-white/10 bg-[#101214] p-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="col-span-4 flex flex-col gap-4 h-full overflow-hidden rounded-xl border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-4">
+          <div className="flex items-center justify-between pb-3 border-b border-white/20">
             <div className="flex items-center gap-2 text-zinc-100">
-              <RiStickyNoteLine className="text-emerald-400" />
+              <RiStickyNoteLine className="text-white" />
               <span className="text-sm font-semibold">Notes</span>
             </div>
 
@@ -152,17 +157,17 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
                 }}
                 className={`group p-4 rounded-lg transition-colors cursor-pointer flex items-center justify-between relative overflow-hidden border ${
                   selectedNote?.filename === note.filename && !isEditorOpen
-                    ? 'bg-emerald-400/10 border-emerald-400/50'
-                    : 'bg-[#151719] border-white/10 hover:bg-[#191d1f]'
+                    ? 'bg-white/10 border-white/50'
+                    : 'bg-[#151719] border-white/20 hover:bg-[#191d1f]'
                 }`}
               >
                 {selectedNote?.filename === note.filename && !isEditorOpen && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-400" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-white" />
                 )}
 
                 <div className="overflow-hidden pl-2">
                   <h3
-                    className={`text-sm font-medium truncate transition-colors ${selectedNote?.filename === note.filename && !isEditorOpen ? 'text-emerald-200' : 'text-zinc-200'}`}
+                    className={`text-sm font-medium truncate transition-colors ${selectedNote?.filename === note.filename && !isEditorOpen ? 'text-white' : 'text-zinc-200'}`}
                   >
                     {note.title.replace(/_/g, ' ')}
                   </h3>
@@ -188,11 +193,11 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
       </div>
 
       <div
-        className="col-span-8 flex flex-col overflow-hidden relative rounded-xl border border-white/10 bg-[#101214]"
+        className="col-span-8 flex flex-col overflow-hidden relative rounded-xl border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]"
       >
         {isEditorOpen ? (
           <div className="flex-1 flex flex-col p-6 relative z-10">
-            <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between mb-6 border-b border-white/20 pb-4">
               <input
                 type="text"
                 placeholder="Note title"
@@ -205,13 +210,13 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
                 <button
                   onClick={saveManualNote}
                   disabled={!newTitle || !newContent}
-                  className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-emerald-400 disabled:opacity-40 active:scale-95"
+                  className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-white disabled:opacity-40 active:scale-95"
                 >
                   <RiSave3Line size={16} /> {editOriginalFilename ? 'Update' : 'Save'}
                 </button>
                 <button
                   onClick={cancelEditor}
-                  className="rounded-lg border border-white/10 p-2 text-zinc-500 transition-colors hover:text-white"
+                  className="rounded-lg border border-white/20 p-2 text-zinc-500 transition-colors hover:text-white"
                 >
                   <RiCloseLine size={22} />
                 </button>
@@ -222,14 +227,14 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
               placeholder="Write your note..."
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
-              className="flex-1 rounded-lg border border-white/10 bg-black/20 outline-none resize-none text-sm text-zinc-200 placeholder-zinc-600 leading-relaxed p-4 scrollbar-small"
+              className="flex-1 rounded-lg border border-white/20 bg-black/20 outline-none resize-none text-sm text-zinc-200 placeholder-zinc-600 leading-relaxed p-4 scrollbar-small"
             />
           </div>
         ) : selectedNote ? (
           <>
-            <div className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-[#121517]">
+            <div className="h-16 border-b border-white/20 flex items-center justify-between px-6 bg-[#121517]">
               <div className="flex items-center gap-3">
-                <RiFileTextLine className="text-emerald-400" />
+                <RiFileTextLine className="text-white" />
                 <span className="text-sm font-semibold text-zinc-100">
                   {selectedNote.title}
                 </span>
@@ -237,7 +242,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
               <div className="flex items-center gap-4">
                 <button
                   onClick={startEditing}
-                  className="text-zinc-500 hover:text-emerald-300 transition-colors"
+                  className="text-zinc-500 hover:text-white transition-colors"
                   title="Edit note"
                 >
                   <RiEditLine size={18} />
@@ -257,7 +262,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 relative z-10 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] cursor-pointer" onClick={startCreating}>
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-white/20 bg-white/[0.03] cursor-pointer" onClick={startCreating}>
               <RiFileTextLine size={32} className="text-zinc-500" />
             </div>
             <div className="flex flex-col items-center gap-2">

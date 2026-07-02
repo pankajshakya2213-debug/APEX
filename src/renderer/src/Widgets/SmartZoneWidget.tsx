@@ -96,9 +96,9 @@ export default function SmartDropZonesWidget() {
       id: 'documents',
       label: 'Docs',
       icon: FileText,
-      color: 'text-emerald-400',
-      bg: 'bg-emerald-500/10',
-      border: 'border-emerald-500/30'
+      color: 'text-white',
+      bg: 'bg-white/10',
+      border: 'border-white/30'
     },
     {
       id: 'code',
@@ -140,7 +140,7 @@ export default function SmartDropZonesWidget() {
               {status === 'sorting' ? (
                 <Zap className="w-5 h-5 text-white animate-pulse" />
               ) : (
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <CheckCircle2 className="w-5 h-5 text-white" />
               )}
               <span className="text-sm font-black tracking-[0.2em] uppercase text-white">
                 {status === 'sorting' ? 'High-Speed Asset Router' : 'Routing Complete'}

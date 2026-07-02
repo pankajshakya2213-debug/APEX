@@ -407,17 +407,22 @@ function Editor() {
   }
 
   return (
-    <div className="flex h-full w-full bg-[#090b0c] relative overflow-hidden font-sans text-zinc-100">
+    <div className="flex h-full w-full bg-[#080a09] relative overflow-hidden font-sans text-zinc-100">
+      {/* Ambient Background Glows */}
+      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
+      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+
       <div
-        className={`fixed top-10 left-0 h-[calc(100vh-150px)] overflow-y-auto border-r border-white/10 bg-[#101214] p-4 pb-8 flex flex-col gap-1 transition-all duration-300 ease-in-out z-40 library-scrollbar overflow-x-hidden ${isSidebarOpen ? 'w-72 opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-10 p-0'}`}
+        className={`fixed top-10 left-0 h-[calc(100vh-150px)] overflow-y-auto border-r border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-4 pb-8 flex flex-col gap-1 transition-all duration-300 ease-in-out z-40 library-scrollbar overflow-x-hidden ${isSidebarOpen ? 'w-72 opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-10 p-0'}`}
       >
         {isSidebarOpen && (
           <>
-            <div className="flex items-center justify-between mb-5 border-b border-white/10 pb-3">
+            <div className="flex items-center justify-between mb-5 border-b border-white/20 pb-3">
               <h2 className="text-xs font-semibold tracking-wide text-zinc-100">
                 Module Library
               </h2>
-              <div className="h-2 w-2 rounded-full bg-emerald-400" />
+              <div className="h-2 w-2 rounded-full bg-white" />
             </div>
 
             {Object.entries(CATEGORIZED_TOOLS).map(([category, tools]) => (
@@ -429,13 +434,13 @@ function Editor() {
                   {tools.map((tool: any) => (
                     <div
                       key={tool.name}
-                      className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#151719] p-2.5 cursor-grab transition-colors hover:border-emerald-400/50 hover:bg-[#191d1f] active:scale-[0.99]"
+                      className="flex items-center gap-3 rounded-lg border border-white/20 bg-[#151719] p-2.5 cursor-grab transition-colors hover:border-white/50 hover:bg-[#191d1f] active:scale-[0.99]"
                       draggable
                       onDragStart={(e) =>
                         e.dataTransfer.setData('application/reactflow', tool.name)
                       }
                     >
-                      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-white/10 bg-black/25">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-white/20 bg-black/25">
                         {getIcon(tool.name, 16)}
                       </div>
                       <div className="flex flex-col">
@@ -457,16 +462,21 @@ function Editor() {
 
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className={`absolute top-1/2 left-0 -translate-y-1/2 border border-l-0 border-white/10 bg-[#111315] p-2.5 rounded-r-lg text-zinc-400 hover:text-emerald-300 z-50 transition-all ${isSidebarOpen ? 'translate-x-[18rem]' : 'translate-x-0'}`}
+        className={`absolute top-1/2 left-0 -translate-y-1/2 border border-l-0 border-white/20 bg-[#111315] p-2.5 rounded-r-lg text-zinc-400 hover:text-white z-50 transition-all ${isSidebarOpen ? 'translate-x-[18rem]' : 'translate-x-0'}`}
       >
         {isSidebarOpen ? <RiLayoutColumnFill size={22} /> : <RiLayoutColumnLine size={22} />}
       </button>
 
       <div
-        className="grow flex flex-col relative bg-[#090b0c]"
+        className="grow flex flex-col relative bg-[#080a09]"
         onDrop={onDrop}
         onDragOver={onDragOver}
       >
+      {/* Ambient Background Glows */}
+      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
+      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+
         <div
           className={`absolute bottom-36 z-20 flex items-end gap-3 transition-all ${
             isSidebarOpen ? 'left-[19rem]' : 'left-5'
@@ -474,7 +484,7 @@ function Editor() {
         >
           <MacroManagementMenu loadMacroToCanvas={loadMacroToCanvas} />
 
-          <div className="flex h-10 items-center gap-3 rounded-lg border border-white/10 bg-[#111315]/95 px-3 shadow-lg backdrop-blur">
+          <div className="flex h-10 items-center gap-3 rounded-lg border border-white/20 bg-[#111315]/95 px-3 shadow-lg backdrop-blur">
             <span className="text-xs font-medium text-zinc-500">Name</span>
             <input
               type="text"
@@ -485,10 +495,10 @@ function Editor() {
           </div>
         </div>
 
-        <div className="absolute right-5 top-1/2 z-10 flex -translate-y-1/2 flex-col items-stretch gap-2 rounded-xl border border-white/10 bg-[#111315]/95 p-2 shadow-lg backdrop-blur">
+        <div className="absolute right-5 top-1/2 z-10 flex -translate-y-1/2 flex-col items-stretch gap-2 rounded-xl border border-white/20 bg-[#111315]/95 p-2 shadow-lg backdrop-blur">
           <button
             onClick={resetCanvas}
-            className="flex h-11 min-w-28 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-4 text-xs font-semibold text-zinc-200 transition-colors hover:border-emerald-400/50 hover:text-emerald-300 active:scale-95"
+            className="flex h-11 min-w-28 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/[0.03] px-4 text-xs font-semibold text-zinc-200 transition-colors hover:border-white/50 hover:text-white active:scale-95"
             data-tooltip-id="global-tooltip"
             data-tooltip-content="New macro"
           >
@@ -496,14 +506,14 @@ function Editor() {
           </button>
           <button
             onClick={runMacroManually}
-            className="flex h-11 min-w-28 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-5 text-xs font-semibold text-zinc-100 transition-colors hover:border-emerald-400/50 hover:text-emerald-300 active:scale-95"
+            className="flex h-11 min-w-28 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/[0.03] px-5 text-xs font-semibold text-zinc-100 transition-colors hover:border-white/50 hover:text-white active:scale-95"
           >
             <RiPlayFill size={18} /> Run
           </button>
 
           <button
             onClick={saveWorkflow}
-            className="flex h-11 min-w-28 items-center justify-center gap-2 rounded-lg bg-emerald-500 px-5 text-xs font-semibold text-black transition-colors hover:bg-emerald-400 active:scale-95"
+            className="flex h-11 min-w-28 items-center justify-center gap-2 rounded-lg bg-white px-5 text-xs font-semibold text-black transition-colors hover:bg-white active:scale-95"
           >
             <RiSave3Line size={18} /> Save
           </button>
@@ -545,7 +555,7 @@ function Editor() {
           style={{
             maxWidth: '250px',
             backgroundColor: '#09090b',
-            color: '#10b981',
+            color: '#ffffff',
             borderRadius: '12px',
             border: '1px solid rgba(16, 185, 129, 0.2)',
             fontSize: '10px',

@@ -78,7 +78,7 @@ export default function ResearchWidget() {
     if (progressRef.current) {
       gsap.to(progressRef.current, {
         width: '100%',
-        backgroundColor: success ? '#10b981' : '#ef4444',
+        backgroundColor: success ? '#ffffff' : '#ef4444',
         duration: 0.6,
         ease: 'power3.out'
       })
@@ -118,7 +118,7 @@ export default function ResearchWidget() {
               </h3>
             </div>
             {isSuccess === true && (
-              <CheckCircle2 className="w-6 h-6 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)] rounded-full" />
+              <CheckCircle2 className="w-6 h-6 text-white shadow-[0_0_20px_rgba(255,255,255,0.5)] rounded-full" />
             )}
           </div>
 
@@ -137,7 +137,7 @@ export default function ResearchWidget() {
             ) : statusText.includes('Llama') ? (
               <Cpu className="w-5 h-5 text-purple-500 animate-pulse" />
             ) : (
-              <FileText className="w-5 h-5 text-emerald-500" />
+              <FileText className="w-5 h-5 text-white" />
             )}
             <div ref={textRef} className="text-sm text-gray-300 font-mono tracking-wider">
               {statusText}
@@ -154,9 +154,9 @@ export default function ResearchWidget() {
           {summary && (
             <div
               ref={summaryRef}
-              className="mt-4 p-4 bg-emerald-950/20 border border-emerald-500/20 rounded-lg relative z-10 max-h-37.5 overflow-hidden"
+              className="mt-4 p-4 bg-emerald-950/20 border border-white/20 rounded-lg relative z-10 max-h-37.5 overflow-hidden"
             >
-              <p className="text-[10px] text-emerald-400/80 uppercase tracking-widest mb-2 font-bold">
+              <p className="text-[10px] text-white uppercase tracking-widest mb-2 font-bold">
                 Data Extracted
               </p>
               <p className="text-xs text-gray-300 font-mono leading-relaxed line-clamp-4">

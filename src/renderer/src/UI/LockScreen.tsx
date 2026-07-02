@@ -214,15 +214,15 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
       onClick={() => authMode === 'pin' && inputRef.current?.focus()}
     >
       <div
-        className={`absolute inset-0 transition-colors duration-500 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] ${error ? 'from-red-900/40 via-red-950/10 to-black' : isFaceMatched ? 'from-emerald-900/20 via-black to-black' : 'from-emerald-900/5 via-black to-black'}`}
+        className={`absolute inset-0 transition-colors duration-500 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] ${error ? 'from-red-900/40 via-red-950/10 to-black' : isFaceMatched ? 'from-white/20 via-black to-black' : 'from-white/5 via-black to-black'}`}
       ></div>
 
       <div
-        className={`z-10 flex flex-col items-center gap-8 p-12 w-150 rounded-3xl backdrop-blur-xl border transition-all duration-300 ${error ? 'border-red-500/80 bg-red-950/40 shadow-[0_0_80px_rgba(239,68,68,0.3)]' : isFaceMatched ? 'border-emerald-500/40 bg-emerald-950/20 shadow-[0_0_50px_rgba(16,185,129,0.3)]' : 'border-emerald-500/10 bg-zinc-950/60 shadow-2xl'}`}
+        className={`z-10 flex flex-col items-center gap-8 p-12 w-150 rounded-3xl backdrop-blur-xl border transition-all duration-300 ${error ? 'border-red-500/80 bg-red-950/40 shadow-[0_0_80px_rgba(239,68,68,0.3)]' : isFaceMatched ? 'border-white/40 bg-emerald-950/20 shadow-[0_0_50px_rgba(255,255,255,0.3)]' : 'border-white/10 bg-zinc-950/60 shadow-2xl'}`}
       >
         <div className="text-center space-y-3">
           <h1
-            className={`text-2xl font-black tracking-[0.4em] transition-colors flex items-center justify-center gap-3 ${error ? 'text-red-500' : isFaceMatched ? 'text-emerald-400' : 'text-zinc-100'}`}
+            className={`text-2xl font-black tracking-[0.4em] transition-colors flex items-center justify-center gap-3 ${error ? 'text-red-500' : isFaceMatched ? 'text-white' : 'text-zinc-100'}`}
           >
             {error && <RiAlertLine size={28} className="animate-pulse" />}
             {headerText}
@@ -249,7 +249,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
-                className={`relative flex items-center justify-center w-100 h-100 rounded-2xl border-[3px] overflow-hidden transition-colors duration-300 bg-black ${error ? 'border-red-500/80 shadow-[0_0_50px_rgba(239,68,68,0.4)]' : 'border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.15)]'}`}
+                className={`relative flex items-center justify-center w-100 h-100 rounded-2xl border-[3px] overflow-hidden transition-colors duration-300 bg-black ${error ? 'border-red-500/80 shadow-[0_0_50px_rgba(239,68,68,0.4)]' : 'border-white/30 shadow-[0_0_40px_rgba(255,255,255,0.15)]'}`}
               >
                 <video
                   ref={videoRef}
@@ -262,26 +262,26 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                 {isScanning && !isFaceMatched && (
                   <div
                     ref={laserRef}
-                    className={`absolute left-0 w-full h-0.75 z-20 transition-colors duration-300 ${error ? 'bg-red-500 shadow-[0_0_20px_#ef4444,0_0_40px_#ef4444]' : 'bg-emerald-400 shadow-[0_0_20px_#34d399,0_0_40px_#34d399]'}`}
+                    className={`absolute left-0 w-full h-0.75 z-20 transition-colors duration-300 ${error ? 'bg-red-500 shadow-[0_0_20px_#ef4444,0_0_40px_#ef4444]' : 'bg-white shadow-[0_0_20px_#34d399,0_0_40px_#34d399]'}`}
                   ></div>
                 )}
 
                 <div
-                  className={`absolute top-4 left-4 w-8 h-8 border-t-[3px] border-l-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-emerald-500'}`}
+                  className={`absolute top-4 left-4 w-8 h-8 border-t-[3px] border-l-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-white/30'}`}
                 ></div>
                 <div
-                  className={`absolute top-4 right-4 w-8 h-8 border-t-[3px] border-r-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-emerald-500'}`}
+                  className={`absolute top-4 right-4 w-8 h-8 border-t-[3px] border-r-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-white/30'}`}
                 ></div>
                 <div
-                  className={`absolute bottom-4 left-4 w-8 h-8 border-b-[3px] border-l-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-emerald-500'}`}
+                  className={`absolute bottom-4 left-4 w-8 h-8 border-b-[3px] border-l-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-white/30'}`}
                 ></div>
                 <div
-                  className={`absolute bottom-4 right-4 w-8 h-8 border-b-[3px] border-r-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-emerald-500'}`}
+                  className={`absolute bottom-4 right-4 w-8 h-8 border-b-[3px] border-r-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-white/30'}`}
                 ></div>
 
                 {isFaceMatched && (
-                  <div className="absolute inset-0 bg-emerald-500/30 flex items-center justify-center backdrop-blur-md z-30">
-                    <RiFingerprintLine size={90} className="text-emerald-400 animate-in zoom-in" />
+                  <div className="absolute inset-0 bg-white/30 flex items-center justify-center backdrop-blur-md z-30">
+                    <RiFingerprintLine size={90} className="text-white animate-in zoom-in" />
                   </div>
                 )}
 
@@ -306,7 +306,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                 className="flex flex-col items-center gap-8"
               >
                 <div
-                  className={`p-8 rounded-full transition-colors duration-300 ${error ? 'text-red-500 bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.2)]' : 'text-emerald-400 bg-emerald-500/10 shadow-[0_0_40px_rgba(16,185,129,0.2)]'}`}
+                  className={`p-8 rounded-full transition-colors duration-300 ${error ? 'text-red-500 bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.2)]' : 'text-white bg-white/10 shadow-[0_0_40px_rgba(255,255,255,0.2)]'}`}
                 >
                   {needsPinSetup ? (
                     <RiLockPasswordLine size={64} />
@@ -326,16 +326,16 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                           isFilled
                             ? error
                               ? 'border-red-500 bg-red-500/10 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
-                              : 'border-emerald-400 bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                              : 'border-white/30 bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.4)]'
                             : isActive
-                              ? 'border-emerald-500/50 bg-black/60 shadow-[0_0_20px_rgba(16,185,129,0.1)] scale-105'
+                              ? 'border-white/50 bg-black/60 shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-105'
                               : 'border-white/5 bg-black/40 text-zinc-700'
                         }`}
                       >
                         {isFilled ? (
                           <span className="animate-in zoom-in duration-200">●</span>
                         ) : isActive ? (
-                          <span className="animate-pulse text-emerald-500/50">|</span>
+                          <span className="animate-pulse text-white">|</span>
                         ) : (
                           ''
                         )}
@@ -359,7 +359,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                 setPin('')
               }
             }}
-            className="mt-4 px-8 py-3 rounded-full border border-zinc-800 bg-black text-[11px] font-bold tracking-[0.2em] text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all flex items-center gap-3 shadow-lg"
+            className="mt-4 px-8 py-3 rounded-full border border-zinc-800 bg-black text-[11px] font-bold tracking-[0.2em] text-zinc-400 hover:text-white hover:border-white/50 hover:bg-white/10 transition-all flex items-center gap-3 shadow-lg"
           >
             {authMode === 'face' ? (
               <RiLockPasswordLine size={16} />

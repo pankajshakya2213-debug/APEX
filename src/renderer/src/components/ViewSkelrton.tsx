@@ -22,7 +22,7 @@ const ViewSkeleton = () => {
           </div>
         </div>
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-emerald-500/50">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white">
           <RiLoader4Line className="animate-spin text-4xl" />
           <span className="text-[10px] tracking-[0.3em] font-mono">INITIALIZING MODULE...</span>
         </div>

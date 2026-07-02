@@ -139,7 +139,7 @@ const APEX = (props: APEXProps) => {
         <div
           className={`absolute bottom-0 left-0 h-[2px] transition-all duration-500 ${
             networkState === 'GOOD'
-              ? 'w-full bg-emerald-400/80'
+              ? 'w-full bg-white/80'
               : networkState === 'SLOW'
                 ? 'w-2/3 bg-yellow-400/90'
                 : networkState === 'STALLED'
@@ -150,13 +150,7 @@ const APEX = (props: APEXProps) => {
           }`}
         />
         <div className="flex items-center gap-3">
-          <RiShieldFlashLine className="text-emerald-500 text-xl animate-pulse drop-shadow-[0_0_10px_rgba(16,185,129,0.6)]" />
-          <div className="flex flex-col leading-none">
-            <span className="font-black tracking-[0.22em] text-xs text-white">APEX</span>
-            <span className="text-[8px] font-mono text-zinc-500 tracking-[0.16em] opacity-90 uppercase font-black">
-              Neural Interface
-            </span>
-          </div>
+          <RiShieldFlashLine className="text-white text-xl animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]" />
         </div>
 
         <div className={`fixed bottom-0 left-0 z-[80] h-14 w-full items-center justify-between border-t border-white/10 bg-black/85 px-10 backdrop-blur-xl ${activeTab === 'DASHBOARD' ? 'hidden' : 'hidden md:flex'}`}>
@@ -173,7 +167,7 @@ const APEX = (props: APEXProps) => {
                 <button
                   onClick={() => openFullTab(tab.id)}
                   className={`flex w-18 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-[10px] font-medium transition-all duration-200 ${
-                    activeTab === tab.id ? 'text-emerald-300' : 'text-zinc-400 hover:text-white'
+                    activeTab === tab.id ? 'text-white' : 'text-zinc-400 hover:text-white'
                   }`}
                 >
                   <span className="text-base">{tab.icon}</span>
@@ -248,10 +242,10 @@ const APEX = (props: APEXProps) => {
           />
 
           {dashboardPanel && (
-            <div className="absolute bottom-5 right-5 top-5 z-[70] overflow-hidden rounded-[28px] border border-emerald-400/25 bg-[#070908]/96 shadow-[0_24px_90px_rgba(0,0,0,0.55)] backdrop-blur-2xl animate-in slide-in-from-left-24 fade-in duration-300 lg:left-[500px] left-5">
+            <div className="absolute bottom-5 right-5 top-5 z-[70] overflow-hidden rounded-[28px] border border-white/25 bg-[#070908]/96 shadow-[0_24px_90px_rgba(0,0,0,0.55)] backdrop-blur-2xl animate-in slide-in-from-left-24 fade-in duration-300 lg:left-[500px] left-5">
               <div className="absolute left-0 right-0 top-0 z-20 flex h-14 items-center justify-between border-b border-white/10 bg-black/55 px-5 backdrop-blur-xl">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">
+                  <p className="text-xs font-black uppercase tracking-[0.28em] text-white">
                     {dashboardPanel === 'Macros' ? 'Macro' : dashboardPanel}
                   </p>
                   <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-zinc-500">
@@ -260,7 +254,7 @@ const APEX = (props: APEXProps) => {
                 </div>
                 <button
                   onClick={() => setDashboardPanel(null)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-emerald-400/40 hover:text-emerald-300"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-white/40 hover:text-white"
                   title="Close panel"
                 >
                   <RiCloseLine size={18} />
@@ -288,9 +282,9 @@ const APEX = (props: APEXProps) => {
 
       {showSourceModal && (
         <div className="absolute inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className={`${glassPanel} w-96 p-1 border-emerald-500/30 flex flex-col shadow-2xl`}>
+          <div className={`${glassPanel} w-96 p-1 border-white/30 flex flex-col shadow-2xl`}>
             <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/5">
-              <span className="text-xs font-bold tracking-widest text-emerald-400">
+              <span className="text-xs font-bold tracking-widest text-white">
                 ESTABLISH UPLINK
               </span>
               <button
@@ -307,12 +301,12 @@ const APEX = (props: APEXProps) => {
                   props.startVision('camera')
                   setShowSourceModal(false)
                 }}
-                className="cursor-pointer group flex flex-col items-center justify-center gap-3 p-6 rounded-xl bg-black/40 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all"
+                className="cursor-pointer group flex flex-col items-center justify-center gap-3 p-6 rounded-xl bg-black/40 border border-white/10 hover:border-white/50 hover:bg-white/10 transition-all"
               >
-                <div className="p-3 rounded-full bg-zinc-900 group-hover:bg-emerald-500 text-zinc-400 group-hover:text-black transition-colors">
+                <div className="p-3 rounded-full bg-zinc-900 group-hover:bg-white text-zinc-400 group-hover:text-black transition-colors">
                   <RiCameraLine size={28} />
                 </div>
-                <span className="text-[10px] font-bold tracking-widest text-zinc-300 group-hover:text-emerald-400">
+                <span className="text-[10px] font-bold tracking-widest text-zinc-300 group-hover:text-white">
                   CAMERA FEED
                 </span>
               </button>
@@ -322,12 +316,12 @@ const APEX = (props: APEXProps) => {
                   props.startVision('screen')
                   setShowSourceModal(false)
                 }}
-                className="cursor-pointer group flex flex-col items-center justify-center gap-3 p-6 rounded-xl bg-black/40 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all"
+                className="cursor-pointer group flex flex-col items-center justify-center gap-3 p-6 rounded-xl bg-black/40 border border-white/10 hover:border-white/50 hover:bg-white/10 transition-all"
               >
-                <div className="p-3 rounded-full bg-zinc-900 group-hover:bg-emerald-500 text-zinc-400 group-hover:text-black transition-colors">
+                <div className="p-3 rounded-full bg-zinc-900 group-hover:bg-white text-zinc-400 group-hover:text-black transition-colors">
                   <RiComputerLine size={28} />
                 </div>
-                <span className="text-[10px] font-bold tracking-widest text-zinc-300 group-hover:text-emerald-400">
+                <span className="text-[10px] font-bold tracking-widest text-zinc-300 group-hover:text-white">
                   SCREEN SHARE
                 </span>
               </button>

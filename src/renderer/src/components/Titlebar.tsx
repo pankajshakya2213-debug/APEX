@@ -43,9 +43,9 @@ const TitleBar = () => {
           </button>
           <button
             onClick={toggleMaximize}
-            className="w-3 h-3 rounded-full bg-emerald-500 hover:bg-emerald-600 border border-emerald-600 flex items-center justify-center group"
+            className="w-3 h-3 rounded-full bg-white hover:bg-white border border-white/30 flex items-center justify-center group"
           >
-            <span className="hidden group-hover:block text-[6px] text-emerald-900 font-bold">
+            <span className="hidden group-hover:block text-[6px] text-white font-bold">
               ↗
             </span>
           </button>
@@ -53,10 +53,7 @@ const TitleBar = () => {
       )}
 
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 opacity-60 pointer-events-none">
-        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
-        <div className="text-[11px] font-bold text-zinc-300 tracking-[0.3em]">
-          APEX OS // {isMac ? 'MAC' : 'SYSTEM'}
-        </div>
+        
       </div>
 
       {!isMac && (

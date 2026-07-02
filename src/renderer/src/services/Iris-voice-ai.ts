@@ -1868,6 +1868,21 @@ ${JSON.stringify(history)}
         if (gatedLevel > 0.01) {
           this.lastVoiceActivityAt = now
           if (this.status === 'IDLE') this.setStatus('LISTENING')
+        } else if (this.status === 'LISTENING' && now - this.lastVoiceActivityAt > 1500) {
+          this.setStatus('THINKING')
+          this.socket.send(
+            JSON.stringify({
+              clientContent: {
+                turns: [
+                  {
+                    role: 'user',
+                    parts: [{ text: '' }]
+                  }
+                ],
+                turnComplete: true
+              }
+            })
+          )
         }
 
         this.rawAudioBuffer.push(inputData.slice())

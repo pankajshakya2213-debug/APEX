@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef, useState, KeyboardEvent } from 'react'
-import PlasmaBlob from '@renderer/components/PlasmaBlob'
+import { motion, AnimatePresence } from 'framer-motion'
+import DataStream from '@renderer/components/DataStream'
 import { irisService } from '@renderer/services/Iris-voice-ai'
 import {
   RiCameraLine,
@@ -313,11 +314,15 @@ export default function DashboardView({
   ]
 
   return (
-    <div className="grid h-full w-full grid-cols-12 gap-5 overflow-hidden bg-[#080a09] px-5 pb-5 pt-5">
+    <div className="relative grid h-full w-full grid-cols-12 gap-5 overflow-hidden bg-[#080a09] px-5 pb-5 pt-5">
+      {/* Ambient Background Glows */}
+      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
+      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
       <div className="col-span-12 flex min-h-0 flex-col gap-4 lg:col-span-3">
-        <div className="relative h-[150px] overflow-hidden rounded-[24px] border border-emerald-400/25 bg-[#111413] shadow-[0_18px_50px_rgba(0,0,0,0.35)]">
+        <div className="relative h-[150px] overflow-hidden rounded-[24px] border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
           <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
-            <span className={`h-2 w-2 rounded-full ${isScreenOn ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-zinc-500'}`} />
+            <span className={`h-2 w-2 rounded-full ${isScreenOn ? 'bg-zinc-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-zinc-500'}`} />
             <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
               Real Time Feed
             </span>
@@ -330,19 +335,19 @@ export default function DashboardView({
             muted
           />
           {!isScreenOn && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-zinc-600">
-              <RiCameraLine size={24} />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.18em]">No Signal</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 overflow-hidden text-zinc-600">
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:14px_24px]" />
+              <RiCameraLine size={24} className="animate-pulse" />
+              <span className="z-10 text-[9px] font-semibold uppercase tracking-[0.18em]">No Signal</span>
             </div>
           )}
           <button
             onClick={toggleFeed}
             disabled={!isSystemActive}
-            className={`absolute bottom-3 right-3 rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors ${
-              isScreenOn
+            className={`absolute bottom-3 right-3 rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors ${isScreenOn
                 ? 'border-red-400/30 bg-red-500/15 text-red-300'
-                : 'border-emerald-400/30 bg-emerald-400/15 text-emerald-300 disabled:opacity-40'
-            }`}
+                : 'border-zinc-400/30 bg-zinc-400/15 text-zinc-300 disabled:opacity-40'
+              }`}
           >
             {isScreenOn ? 'Feed Off' : 'Feed On'}
           </button>
@@ -350,28 +355,43 @@ export default function DashboardView({
 
         <div className="grid gap-2">
           {navButtons.map((item) => (
-            <button
+            <motion.button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className="flex h-10 items-center gap-3 rounded-xl border border-white/10 bg-[#111413] px-4 text-sm font-semibold text-zinc-200 transition-colors hover:border-emerald-400/50 hover:text-emerald-300"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className={`group relative flex h-10 w-full items-center gap-3 rounded-xl border border-white/20 bg-white/5 px-4 text-sm font-semibold transition-all hover:bg-white/10 hover:shadow-lg ${item.id === 'DASHBOARD'
+                  ? 'border-l-4 border-l-cyan-400 bg-white/10 text-white shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]'
+                  : 'text-zinc-300 backdrop-blur-md'
+                }`}
             >
-              <span className="text-emerald-400">{item.icon}</span>
+              <span className={`${item.id === 'DASHBOARD' ? 'text-cyan-400' : 'text-zinc-400 group-hover:text-zinc-200'}`}>
+                {item.icon}
+              </span>
               {item.label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-cols-2 overflow-hidden rounded-2xl border border-white/10 bg-[#111413]">
+        <div className="grid min-h-0 flex-1 grid-cols-2 overflow-hidden rounded-2xl border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
           {[
-            { label: 'CPU', value: props.isSystemActive && stats ? `${stats.cpu}%` : '--', icon: <RiCpuLine /> },
-            { label: 'OS', value: stats?.os?.type || '--', icon: <RiLayoutGridLine /> },
-            { label: 'Memory', value: props.isSystemActive && stats ? `${stats.memory.usedPercentage}%` : '--', icon: <RiDatabase2Line /> },
-            { label: 'Temp', value: stats?.temperature ? `${stats.temperature}C` : '--', icon: <RiSwapBoxLine /> }
+            { label: 'CPU', value: props.isSystemActive && stats ? `${stats.cpu}%` : '--', icon: <RiCpuLine />, color: 'bg-cyan-400', active: props.isSystemActive },
+            { label: 'OS', value: stats?.os?.type || '--', icon: <RiLayoutGridLine />, color: 'bg-purple-400', active: true },
+            { label: 'Memory', value: props.isSystemActive && stats ? `${stats.memory.usedPercentage}%` : '--', icon: <RiDatabase2Line />, color: 'bg-white', active: props.isSystemActive },
+            { label: 'Temp', value: stats?.temperature ? `${stats.temperature}C` : '--', icon: <RiSwapBoxLine />, color: 'bg-rose-400', active: !!stats?.temperature }
           ].map((metric) => (
-            <div key={metric.label} className="flex min-h-[86px] flex-col justify-between border border-white/5 p-4">
-              <div className="flex items-center justify-between text-zinc-500">
-                <span className="text-lg text-emerald-400">{metric.icon}</span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em]">{metric.label}</span>
+            <div key={metric.label} className="relative flex min-h-[86px] flex-col justify-between overflow-hidden border border-white/5 bg-gradient-to-br from-white/5 to-transparent p-4 hover:bg-white/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg text-zinc-400 group-hover:text-zinc-200">{metric.icon}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">{metric.label}</span>
+                </div>
+                {metric.active && (
+                  <span className="relative flex h-2 w-2">
+                    <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${metric.color}`}></span>
+                    <span className={`relative inline-flex h-2 w-2 rounded-full ${metric.color}`}></span>
+                  </span>
+                )}
               </div>
               <span className="text-lg font-semibold text-zinc-100">{metric.value}</span>
             </div>
@@ -380,70 +400,78 @@ export default function DashboardView({
       </div>
 
       <div className="relative col-span-12 flex min-h-0 flex-col items-center justify-between overflow-hidden lg:col-span-6">
-        <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#111413]/95 px-6 py-2 text-center text-sm font-semibold tracking-[0.18em] text-zinc-200 shadow-lg">
+        <div className="w-full max-w-md rounded-xl border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] px-6 py-2 text-center text-sm font-semibold tracking-[0.18em] text-zinc-200">
           APEX
         </div>
 
-        <div className="relative flex h-[330px] w-[380px] max-w-full flex-col items-center justify-center rounded-[34px] border border-white/10 bg-[#111413]/75 shadow-[0_20px_80px_rgba(0,0,0,0.4)]">
-          <div className="relative h-[250px] w-[250px]">
-            <PlasmaBlob active={isSystemActive} mood={robotMood} color={blobColor} />
-          </div>
-          <div className="absolute bottom-8 text-center">
-            <p className="text-[21px] font-semibold text-white">{assistantState}</p>
-            <span className="mt-1 block text-xs text-zinc-400">
-              {isSystemActive ? 'How can I help you?' : 'Tap call to connect'}
-            </span>
+        <div className="relative flex h-[330px] w-[380px] max-w-full flex-col items-center justify-center rounded-[34px] border border-white/5 bg-black shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
+          <div className="relative flex items-center justify-center h-[250px] w-[250px]">
+            <div className="absolute inset-0 z-10 pointer-events-none">
+              <DataStream status={!isSystemActive ? 'IDLE' : irisStatus === 'IDLE' ? 'LISTENING' : irisStatus} color={blobColor} />
+            </div>
+            {/* Text inside the ring */}
+            <div className="z-20 text-center flex flex-col items-center justify-center">
+              <p className="text-xl font-bold text-white tracking-wide">{assistantState}</p>
+              <span className="mt-1 block text-[11px] text-zinc-500 uppercase tracking-wider">
+                {isSystemActive ? '🫠HELLO BOSS🤗' : 'Tap call to connect'}
+              </span>
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-8">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.9 }}
             onClick={toggleMic}
-            className={`flex h-12 w-12 items-center justify-center rounded-2xl border text-2xl transition-all ${isMicMuted
-                ? 'border-red-400/40 bg-red-500/15 text-red-300'
-                : 'border-emerald-400/40 bg-emerald-400/15 text-emerald-300'
+            className={`flex h-14 w-14 items-center justify-center rounded-[22px] border backdrop-blur-2xl transition-all ${isMicMuted
+              ? 'border-red-500/40 bg-red-500/10 text-red-400 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_0_20px_rgba(239,68,68,0.2)]'
+              : 'border-white/10 bg-white/5 text-zinc-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_8px_16px_rgba(0,0,0,0.4)] hover:bg-white/10'
               }`}
             title="System Mic"
           >
             {isMicMuted ? <RiMicOffLine size={24} /> : <RiMicLine size={24} />}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
             onClick={toggleSystem}
-            className={`relative flex h-14 w-44 items-center rounded-2xl border px-2 text-sm font-semibold transition-all ${isSystemActive
-                ? 'border-emerald-400/50 bg-emerald-400/15 text-emerald-200'
-                : 'border-white/15 bg-[#111413] text-zinc-400'
+            className={`relative flex h-14 w-48 items-center rounded-full border transition-all overflow-hidden ${isSystemActive
+              ? 'border-cyan-500/30 bg-cyan-500/5 text-cyan-200 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5),0_0_20px_rgba(6,182,212,0.15)]'
+              : 'border-white/10 bg-black/40 text-zinc-400 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]'
               }`}
             title="Voice System"
           >
-            <span className="absolute inset-y-2 left-2 right-2 rounded-xl bg-black/25" />
             <span
-              className={`absolute top-2 flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 ${isSystemActive
-                  ? 'left-[calc(100%-3rem)] border-emerald-300/50 bg-emerald-400 text-black shadow-[0_0_18px_rgba(52,211,153,0.45)]'
-                  : 'left-2 border-white/10 bg-white/[0.04] text-zinc-400'
+              className={`absolute top-1.5 flex h-11 w-11 items-center justify-center rounded-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isSystemActive
+                ? 'left-[calc(100%-3.15rem)] bg-cyan-400 text-black shadow-[0_0_15px_rgba(34,211,238,0.6),inset_0_2px_4px_rgba(255,255,255,0.4)]'
+                : 'left-1.5 bg-zinc-700/80 text-zinc-300 shadow-[0_2px_5px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-md'
                 }`}
             >
               <RiPhoneFill size={20} className={isSystemActive ? 'rotate-[135deg]' : ''} />
             </span>
-            <span className={`relative z-10 w-full px-3 transition-all ${isSystemActive ? 'pr-12 text-left' : 'pl-12 text-right'}`}>
+            <span className={`relative z-10 w-full px-4 transition-all duration-500 font-bold uppercase tracking-widest text-[11px] ${isSystemActive ? 'pr-14 text-left' : 'pl-14 text-right'}`}>
               {isSystemActive ? 'Call On' : 'Call Off'}
             </span>
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.9 }}
             onClick={toggleCamera}
-            className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-all ${isCameraOn
-                ? 'border-emerald-400/50 bg-emerald-400/15 text-emerald-300'
-                : 'border-white/15 bg-[#111413] text-zinc-400'
+            className={`flex h-14 w-14 items-center justify-center rounded-[22px] border backdrop-blur-2xl transition-all ${isCameraOn
+              ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_0_20px_rgba(6,182,212,0.2)]'
+              : 'border-white/10 bg-white/5 text-zinc-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_8px_16px_rgba(0,0,0,0.4)] hover:bg-white/10'
               }`}
             title="Camera On/Off"
           >
             {isCameraOn ? <RiSwapBoxLine size={22} /> : <RiCameraLine size={22} />}
-          </button>
+          </motion.button>
         </div>
       </div>
 
       <div className="col-span-12 grid min-h-0 grid-rows-[minmax(0,1fr)_170px] gap-3 lg:col-span-3">
-        <div className="relative min-h-0 overflow-hidden rounded-[28px] border border-white/10 bg-[#111413] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
-          <div className="absolute left-0 right-0 top-0 h-16 border-b border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0))] px-4 py-3">
+        <div className="relative min-h-0 overflow-hidden rounded-[28px] border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+          <div className="absolute left-0 right-0 top-0 h-16 border-b border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0))] px-4 py-3">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-semibold text-white">Chat History</h2>
@@ -451,7 +479,7 @@ export default function DashboardView({
                   Live command stream
                 </p>
               </div>
-              <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-300">
+              <div className="rounded-full border border-zinc-400/20 bg-zinc-400/10 px-2.5 py-1 text-[10px] font-semibold text-zinc-300">
                 {chatHistory.length}
               </div>
             </div>
@@ -469,44 +497,49 @@ export default function DashboardView({
                   <span className="font-mono text-[9px] uppercase tracking-widest">No chat yet</span>
                 </div>
               ) : (
-                chatHistory.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[92%] rounded-2xl border px-3.5 py-3 text-sm leading-snug shadow-sm ${msg.role === 'user'
-                          ? 'rounded-br-md border-emerald-400/20 bg-emerald-400/12 text-emerald-50'
-                          : 'rounded-bl-md border-white/10 bg-black/22 text-zinc-100'
-                        }`}
+                <AnimatePresence initial={false}>
+                  {chatHistory.map((msg, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className="mb-1.5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${msg.role === 'user' ? 'bg-emerald-300' : 'bg-cyan-300'
-                            }`}
-                        />
-                        <span>{msg.role === 'user' ? 'You' : 'APEX'}</span>
-                      </div>
-                      {msg.image && (
-                        <div className="mb-2 flex items-center gap-2 text-xs text-zinc-400">
-                          <RiImageAddLine size={14} className="text-emerald-400" />
-                          <span>[Image sent]</span>
+                      <div
+                        className={`max-w-[92%] rounded-2xl border px-3.5 py-3 text-sm leading-snug shadow-sm backdrop-blur-md ${msg.role === 'user'
+                          ? 'rounded-br-md border-white/20 bg-white/10 text-white'
+                          : 'rounded-bl-md border-white/20 bg-black/40 text-zinc-200'
+                          }`}
+                      >
+                        <div className="mb-1.5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${msg.role === 'user' ? 'bg-zinc-300' : 'bg-cyan-300'
+                              }`}
+                          />
+                          <span>{msg.role === 'user' ? 'You' : 'APEX'}</span>
                         </div>
-                      )}
-                      <div className="whitespace-pre-wrap break-words">
-                        {msg.parts && msg.parts[0] ? msg.parts[0].text : msg.content}
+                        {msg.image && (
+                          <div className="mb-2 flex items-center gap-2 text-xs text-zinc-400">
+                            <RiImageAddLine size={14} className="text-zinc-400" />
+                            <span>[Image sent]</span>
+                          </div>
+                        )}
+                        <div className="whitespace-pre-wrap break-words">
+                          {msg.parts && msg.parts[0] ? msg.parts[0].text : msg.content}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               )}
             </div>
 
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-[#0f1110]/95 px-3 py-3 backdrop-blur-xl">
+          <div className="absolute bottom-0 left-0 right-0 border-t border-white/20 bg-white/5 px-3 py-3 backdrop-blur-2xl">
             {attachedImage && (
-              <div className="absolute bottom-[82px] left-3 right-3 rounded-xl border border-emerald-500/30 bg-[#0d1712] p-2 shadow-lg">
+              <div className="absolute bottom-[82px] left-3 right-3 rounded-xl border border-zinc-500/30 bg-[#0d1712] p-2 shadow-lg">
                 <img
                   src={`data:image/jpeg;base64,${attachedImage}`}
                   alt="Attached"
@@ -514,7 +547,7 @@ export default function DashboardView({
                 />
                 <button
                   onClick={() => setAttachedImage(null)}
-                  className="text-[10px] text-emerald-400 underline hover:text-emerald-300"
+                  className="text-[10px] text-zinc-400 underline hover:text-zinc-300"
                 >
                   Remove Image
                 </button>
@@ -531,7 +564,7 @@ export default function DashboardView({
               />
               <button
                 onClick={() => imageInputRef.current?.click()}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-zinc-400 transition-colors hover:border-emerald-400/40 hover:text-emerald-300"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur-md shadow-sm text-zinc-400 transition-colors hover:border-zinc-400/40 hover:text-zinc-300"
                 title="Attach Image"
               >
                 <RiImageAddLine size={18} />
@@ -541,25 +574,25 @@ export default function DashboardView({
                 onChange={(e) => setVoiceCommand(e.target.value)}
                 onKeyDown={handleCommandKeyDown}
                 placeholder="Type your command"
-                className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/35 px-3.5 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none"
+                className="min-w-0 flex-1 rounded-xl border border-white/20 bg-black/35 px-3.5 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-500 focus:outline-none"
               />
               <button
                 onClick={handleCommandSubmit}
-                className="shrink-0 rounded-xl bg-emerald-500 px-4 py-3 text-[11px] font-bold text-black transition-colors hover:bg-emerald-400"
+                className="shrink-0 rounded-xl bg-zinc-500 px-4 py-3 text-[11px] font-bold text-black transition-colors hover:bg-zinc-400"
               >
                 {attachedImage && voiceCommand ? 'SEND ALL' : attachedImage ? 'SEND IMG' : 'SEND'}
               </button>
             </div>
             <p className="mt-1 min-h-3 text-[9px] text-zinc-500">
-              {imageSendStatus && <span className="text-emerald-400">{imageSendStatus}</span>}
+              {imageSendStatus && <span className="text-zinc-400">{imageSendStatus}</span>}
               {!imageSendStatus && attachedImage && 'Image attached'}
             </p>
           </div>
         </div>
 
-        <div className="relative min-h-0 overflow-hidden rounded-[22px] border border-white/10 bg-[#111413] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <div className="relative min-h-0 overflow-hidden rounded-[22px] border border-white/20 bg-[#111413] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
           <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
-            <span className={`h-2 w-2 rounded-full ${isCameraOn ? 'bg-emerald-400' : 'bg-zinc-500'}`} />
+            <span className={`h-2 w-2 rounded-full ${isCameraOn ? 'bg-zinc-400' : 'bg-zinc-500'}`} />
             <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
               Camera
             </span>
@@ -581,7 +614,7 @@ export default function DashboardView({
           {isCameraOn && (
             <button
               onClick={toggleCamera}
-              className="absolute right-4 top-4 rounded-md border border-white/10 bg-black/60 p-1.5 text-emerald-300"
+              className="absolute right-4 top-4 rounded-md border border-white/20 bg-black/60 p-1.5 text-zinc-300"
             >
               <RiSwapBoxLine size={15} />
             </button>
