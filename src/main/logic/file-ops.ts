@@ -45,32 +45,51 @@ const isPathSafe = (filePath: string): boolean => {
   return true
 }
 
+const resolveSmartPath = (filePath: string): string => {
+  if (!filePath) return filePath
+  const standardFolders = ['desktop', 'documents', 'downloads', 'music', 'pictures', 'videos']
+  const lowerFileName = filePath.toLowerCase()
+  for (const folder of standardFolders) {
+    if (lowerFileName === folder) {
+      return app.getPath(folder as any)
+    }
+    if (lowerFileName.startsWith(`${folder}/`) || lowerFileName.startsWith(`${folder}\\`)) {
+      const relativePart = filePath.substring(folder.length + 1)
+      return path.join(app.getPath(folder as any), relativePart)
+    }
+  }
+  return path.resolve(filePath)
+}
+
 export default function registerFileOps(ipcMain: IpcMain) {
   ipcMain.handle('file-ops', async (_event, { operation, sourcePath, destPath }) => {
 
     try {
+      const resolvedSource = resolveSmartPath(sourcePath)
+      const resolvedDest = destPath ? resolveSmartPath(destPath) : undefined
+
       // 🚨 SAFETY CHECK: Ensure paths are safe before any operation
-      if (!isPathSafe(sourcePath)) {
+      if (!isPathSafe(resolvedSource)) {
         return `🚨 SECURITY BLOCKED: Cannot modify system files or protected paths.`
       }
-      if (destPath && !isPathSafe(destPath)) {
+      if (resolvedDest && !isPathSafe(resolvedDest)) {
         return `🚨 SECURITY BLOCKED: Cannot modify system files or protected paths.`
       }
 
       switch (operation) {
         case 'copy':
-          if (!destPath) return 'Error: Destination path required for copy.'
-          await fs.cp(sourcePath, destPath, { recursive: true })
-          return `Success: Copied to ${destPath}`
+          if (!resolvedDest) return 'Error: Destination path required for copy.'
+          await fs.cp(resolvedSource, resolvedDest, { recursive: true })
+          return `Success: Copied to ${resolvedDest}`
 
         case 'move':
-          if (!destPath) return 'Error: Destination path required for move.'
-          await fs.rename(sourcePath, destPath)
-          return `Success: Moved to ${destPath}`
+          if (!resolvedDest) return 'Error: Destination path required for move.'
+          await fs.rename(resolvedSource, resolvedDest)
+          return `Success: Moved to ${resolvedDest}`
 
         case 'delete':
-          await fs.rm(sourcePath, { recursive: true, force: true })
-          return `Success: Deleted ${sourcePath}`
+          await fs.rm(resolvedSource, { recursive: true, force: true })
+          return `Success: Deleted ${resolvedSource}`
 
         default:
           return `Error: Unknown operation '${operation}'`
@@ -82,12 +101,12 @@ export default function registerFileOps(ipcMain: IpcMain) {
 
   ipcMain.handle('create-directory', async (_event, dirPath: string) => {
     try {
-      if (!isPathSafe(dirPath)) {
+      const resolvedDir = resolveSmartPath(dirPath)
+      if (!isPathSafe(resolvedDir)) {
         return { success: false, error: '🚨 SECURITY BLOCKED: Cannot create directory in protected location.' }
       }
 
-      const resolvedPath = path.resolve(dirPath)
-      await fs.mkdir(resolvedPath, { recursive: true })
+      await fs.mkdir(resolvedDir, { recursive: true })
       return { success: true }
     } catch (err) {
       return { success: false, error: String(err) }

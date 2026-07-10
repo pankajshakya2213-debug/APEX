@@ -26,7 +26,31 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
       }
       history.push(newEntry)
 
-      if (history.length > 20) history = history.slice(-20)
+      if (history.length > 20) {
+        const overflow = history.slice(0, history.length - 20)
+        history = history.slice(-20)
+        
+        // Save overflow to monthly archive
+        const currentMonth = new Date().toISOString().slice(0, 7) // "YYYY-MM"
+        const archiveFile = path.join(CHAT_DIR, `iris_memory_${currentMonth}.json`)
+        
+        let archive: any[] = []
+        if (fs.existsSync(archiveFile)) {
+           archive = JSON.parse(fs.readFileSync(archiveFile, 'utf-8') || '[]')
+        }
+        archive.push(...overflow)
+        fs.writeFileSync(archiveFile, JSON.stringify(archive, null, 2))
+        
+        // Cleanup archives older than 3 months
+        const files = fs.readdirSync(CHAT_DIR)
+        const archiveFiles = files.filter(f => f.startsWith('iris_memory_') && f !== 'iris_memory.json').sort()
+        if (archiveFiles.length > 3) {
+           const toDelete = archiveFiles.slice(0, archiveFiles.length - 3)
+           toDelete.forEach(file => {
+             try { fs.unlinkSync(path.join(CHAT_DIR, file)) } catch(e) {}
+           })
+        }
+      }
 
       fs.writeFileSync(FILE_PATH, JSON.stringify(history, null, 2))
       return true
@@ -47,5 +71,21 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
       }
     } catch (err) {}
     return []
+  })
+  ipcMain.handle('get-memory-archive', async (_event, monthsAgo: number) => {
+    try {
+       if (!fs.existsSync(CHAT_DIR)) return []
+       const files = fs.readdirSync(CHAT_DIR)
+       const archiveFiles = files.filter(f => f.startsWith('iris_memory_') && f !== 'iris_memory.json').sort((a,b) => b.localeCompare(a))
+       
+       if (monthsAgo >= 0 && monthsAgo < archiveFiles.length) {
+         const targetFile = archiveFiles[monthsAgo]
+         const data = fs.readFileSync(path.join(CHAT_DIR, targetFile), 'utf-8')
+         return JSON.parse(data || '[]')
+       }
+       return []
+    } catch (e) {
+       return []
+    }
   })
 }

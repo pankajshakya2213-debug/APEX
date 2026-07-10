@@ -20,6 +20,7 @@ import {
 } from 'react-icons/ri'
 import * as faceapi from 'face-api.js'
 import { VisionMode } from '@renderer/IndexRoot'
+import BackgroundGlows from '../components/BackgroundGlows'
 
 interface APEXProps {
   isSystemActive: boolean
@@ -314,12 +315,9 @@ export default function DashboardView({
   ]
 
   return (
-    <div className="relative grid h-full w-full grid-cols-12 gap-5 overflow-hidden bg-[#080a09] px-5 pb-5 pt-5">
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
-      <div className="col-span-12 flex min-h-0 flex-col gap-4 lg:col-span-3">
+    <div className={`relative grid h-full w-full grid-cols-12 gap-5 overflow-hidden px-5 pb-5 pt-5 transition-all duration-1000`}>
+      <BackgroundGlows />
+      <div className="col-span-12 flex min-h-0 flex-col gap-4 lg:col-span-3 z-10">
         <div className="relative h-[150px] overflow-hidden rounded-[24px] border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
           <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
             <span className={`h-2 w-2 rounded-full ${isScreenOn ? 'bg-zinc-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-zinc-500'}`} />

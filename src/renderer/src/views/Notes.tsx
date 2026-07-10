@@ -11,6 +11,7 @@ import {
   RiCloseLine,
   RiEditLine 
 } from 'react-icons/ri'
+import BackgroundGlows from '../components/BackgroundGlows'
 
 interface Note {
   filename: string
@@ -117,10 +118,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
 
   return (
     <div className="flex h-full w-full bg-[#080a09] relative overflow-hidden font-sans text-zinc-100">
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+      <BackgroundGlows />
 
       <button
         onClick={startCreating}

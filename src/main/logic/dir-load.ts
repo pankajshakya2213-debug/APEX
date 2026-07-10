@@ -92,9 +92,34 @@ export default function registerDirLoader(ipcMain: IpcMain) {
         targetPath = os.homedir()
       }
       else if (!path.isAbsolute(targetPath)) {
-        targetPath = path.join(os.homedir(), rawInput)
-      }
+        // Expand system folder prefixes like "Desktop/myfolder" to actual system paths
+        const parts = rawInput.replace(/\\/g, '/').split('/')
+        const firstPart = parts[0].toLowerCase()
+        if (['desktop', 'documents', 'downloads', 'music', 'pictures', 'videos'].includes(firstPart)) {
+          const sysRoot = getSystemPath(firstPart)
+          targetPath = path.join(sysRoot, ...parts.slice(1))
+        } else {
+          targetPath = path.join(os.homedir(), rawInput)
+        }
 
+        let foundPath = false
+        try {
+          await fs.stat(targetPath)
+          foundPath = true
+        } catch (e) {}
+
+        if (!foundPath && platform === 'win32') {
+          for (let i = 67; i <= 90; i++) { 
+            const testPath = path.join(String.fromCharCode(i) + ':\\', rawInput)
+            try {
+              await fs.stat(testPath)
+              targetPath = testPath
+              foundPath = true
+              break
+            } catch (e) {}
+          }
+        }
+      }
 
       try {
         const stats = await fs.stat(targetPath)
@@ -102,7 +127,7 @@ export default function registerDirLoader(ipcMain: IpcMain) {
           return `Error: '${targetPath}' is a FILE. Use 'read_file' to read it.`
         }
       } catch (e) {
-        return `Error: Directory not found at '${targetPath}'.`
+        return `Error: Directory not found at '${targetPath}'. You may need to provide the absolute path (e.g. D:\\folder).`
       }
 
       const dirents = await fs.readdir(targetPath, { withFileTypes: true })

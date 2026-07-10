@@ -10,6 +10,7 @@ export interface SystemStats {
     type: string
     uptime: string
   }
+  paths?: Record<string, string>
 }
 
 export interface AppItem {

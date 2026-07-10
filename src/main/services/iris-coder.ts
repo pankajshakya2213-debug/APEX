@@ -8,9 +8,38 @@ export default function registerIrisCoder({ ipcMain, app }: { ipcMain: IpcMain; 
   const PROJECTS_DIR = path.resolve(app.getPath('userData'), 'Projects')
   if (!fs.existsSync(PROJECTS_DIR)) fs.mkdirSync(PROJECTS_DIR, { recursive: true })
 
+  const resolveSmartPath = (filePath: string): string => {
+    if (!filePath) return filePath
+    const standardFolders = ['desktop', 'documents', 'downloads', 'music', 'pictures', 'videos']
+    const lowerFileName = filePath.toLowerCase()
+    
+    // Check if it's already an absolute path
+    if (path.isAbsolute(filePath)) return filePath
+
+    for (const folder of standardFolders) {
+      if (lowerFileName === folder) {
+        return app.getPath(folder as any)
+      }
+      if (lowerFileName.startsWith(`${folder}/`) || lowerFileName.startsWith(`${folder}\\`)) {
+        const relativePart = filePath.substring(folder.length + 1)
+        return path.join(app.getPath(folder as any), relativePart)
+      }
+    }
+    
+    // If it's just a filename with no path, put it in Projects dir
+    if (!filePath.includes('/') && !filePath.includes('\\')) {
+       return path.join(PROJECTS_DIR, filePath)
+    }
+
+    // Otherwise resolve it relative to Projects dir
+    return path.resolve(PROJECTS_DIR, filePath)
+  }
+
   ipcMain.handle('start-live-coding', async (event, { prompt, filename, geminiKey }) => {
     try {
-      const filePath = path.join(PROJECTS_DIR, filename)
+      const filePath = resolveSmartPath(filename)
+      const dirName = path.dirname(filePath)
+      if (!fs.existsSync(dirName)) fs.mkdirSync(dirName, { recursive: true })
 
       fs.writeFileSync(filePath, '// Boss, connection established. Waiting for AI stream...\n')
 

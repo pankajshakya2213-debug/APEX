@@ -28,14 +28,18 @@ import {
   RiDownloadCloud2Line,
   RiPhoneLine,
   RiSendPlaneLine,
-  RiInstagramLine
+  RiInstagramLine,
+  RiLayoutGridLine
 } from 'react-icons/ri'
+
+import ColorWheel from '../components/ColorWheel'
+import BackgroundGlows from '../components/BackgroundGlows'
 
 interface SettingsProps {
   isSystemActive: boolean
 }
 
-type TabType = 'general' | 'keys' | 'gmail' | 'security' | 'support' | 'about'
+type TabType = 'general' | 'themes' | 'keys' | 'gmail' | 'security' | 'support' | 'about'
 
 const SettingsView = ({ isSystemActive }: SettingsProps) => {
   const [activeTab, setActiveTab] = useState<TabType>('general')
@@ -45,6 +49,26 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
   )
   const [personality, setPersonality] = useState('')
   const [userName, setUserName] = useState(localStorage.getItem('iris_user_name') || '')
+  const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('iris_primary_color') || '#9333ea')
+  const [secondaryColor, setSecondaryColor] = useState(localStorage.getItem('iris_secondary_color') || '#06b6d4')
+
+  const handleApplyPrimaryColor = () => {
+    localStorage.setItem('iris_primary_color', primaryColor)
+    window.dispatchEvent(new Event('iris_color_changed'))
+  }
+
+  const handleApplySecondaryColor = () => {
+    localStorage.setItem('iris_secondary_color', secondaryColor)
+    window.dispatchEvent(new Event('iris_color_changed'))
+  }
+
+  const handleResetColors = () => {
+    setPrimaryColor('#9333ea')
+    setSecondaryColor('#06b6d4')
+    localStorage.setItem('iris_primary_color', '#9333ea')
+    localStorage.setItem('iris_secondary_color', '#06b6d4')
+    window.dispatchEvent(new Event('iris_color_changed'))
+  }
 
   const [geminiKey, setGeminiKey] = useState(localStorage.getItem('iris_custom_api_key') || '')
   const [groqKey, setGroqKey] = useState(localStorage.getItem('iris_groq_api_key') || '')
@@ -390,10 +414,7 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
 
   return (
     <div className="flex-1 p-5 md:p-6 flex flex-col items-center bg-[#080a09] min-h-screen text-zinc-100 relative overflow-y-auto scrollbar-small font-sans pb-28">
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+      <BackgroundGlows />
 
       <motion.div
         className="w-full max-w-5xl flex flex-col gap-5 relative z-10"
@@ -421,7 +442,7 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
         <div className="grid grid-cols-12 gap-5">
           <div className="col-span-12 md:col-span-3">
             <div className="flex md:flex-col gap-2 rounded-xl border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-2">
-              {(['general', 'keys', 'gmail', 'security', 'support', 'about'] as const).map((tab) => (
+              {(['general', 'themes', 'keys', 'gmail', 'security', 'support', 'about'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -431,6 +452,7 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                     }`}
                 >
                   {tab === 'general' && <RiSettings4Line size={15} />}
+                  {tab === 'themes' && <RiLayoutGridLine size={15} />}
                   {tab === 'keys' && <RiPlugLine size={15} />}
                   {tab === 'gmail' && <RiMailLine size={15} />}
                   {tab === 'security' && <RiShieldKeyholeLine size={15} />}
@@ -496,8 +518,8 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                           <span className="text-zinc-400">It reads your entire project folder so you can ask it questions like "Where is the login code?" and it will find the exact file instantly.</span>
                         </li>
                         <li>
-                          <strong className="text-purple-300 block mb-1">Deep Web Research</strong>
-                          <span className="text-zinc-400">Instead of just searching Google, APEX can automatically open websites, read multiple pages, and create a full research report for you.</span>
+                          <strong className="text-purple-300 block mb-1">High Deep Research (Research Writer)</strong>
+                          <span className="text-zinc-400">Instead of just searching Google, APEX can perform extremely detailed internet research on any topic and generate massive 200-300 line formatted Markdown reports that are automatically saved to your desktop.</span>
                         </li>
                       </ul>
                     </div>
@@ -639,6 +661,72 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                     </div>
                   </div>
 
+                </motion.div>
+              )}
+
+              {activeTab === 'themes' && (
+                <motion.div
+                  key="themes"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute w-full flex flex-col gap-6"
+                >
+                  <div className={`${cardClass} p-8 flex flex-col gap-6`}>
+                    <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                      <span className={titleClass}>
+                        <RiLayoutGridLine className="text-white" size={20} /> Theme Color Picker
+                      </span>
+                      <button 
+                        onClick={handleResetColors}
+                        className="px-3 py-1.5 text-xs font-semibold rounded-md bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white transition-all"
+                      >
+                        Reset to Default
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+                      <div className="flex flex-col gap-4">
+                        <label className="text-sm font-semibold text-zinc-300 uppercase tracking-widest flex items-center justify-between">
+                          Primary Glow
+                          <span className="text-[10px] text-zinc-500 font-mono">{primaryColor}</span>
+                        </label>
+                        <div className="flex flex-col items-center p-4 rounded-xl border border-white/10 bg-black/20 shadow-inner">
+                          <ColorWheel 
+                            color={primaryColor} 
+                            onChange={(hex) => setPrimaryColor(hex)} 
+                            size={160} 
+                          />
+                          <button 
+                            onClick={handleApplyPrimaryColor}
+                            className="mt-6 w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition-colors border border-white/10"
+                          >
+                            Apply Primary
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-4">
+                        <label className="text-sm font-semibold text-zinc-300 uppercase tracking-widest flex items-center justify-between">
+                          Secondary Glow
+                          <span className="text-[10px] text-zinc-500 font-mono">{secondaryColor}</span>
+                        </label>
+                        <div className="flex flex-col items-center p-4 rounded-xl border border-white/10 bg-black/20 shadow-inner">
+                          <ColorWheel 
+                            color={secondaryColor} 
+                            onChange={(hex) => setSecondaryColor(hex)} 
+                            size={160} 
+                          />
+                          <button 
+                            onClick={handleApplySecondaryColor}
+                            className="mt-6 w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition-colors border border-white/10"
+                          >
+                            Apply Secondary
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               )}
 

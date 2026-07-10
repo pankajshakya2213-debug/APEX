@@ -59,9 +59,20 @@ const isPathSafe = (filePath: string): boolean => {
 export default function registerFileWrite(ipcMain: IpcMain) {
   ipcMain.handle('write-file', async (_event, { fileName, content }) => {
     try {
-      const isAbsolutePath = fileName.includes('/') || fileName.includes('\\')
+      let isAbsolutePath = fileName.includes('/') || fileName.includes('\\')
+      let targetPath = isAbsolutePath ? fileName : path.join(app.getPath('desktop'), fileName)
 
-      const targetPath = isAbsolutePath ? fileName : path.join(app.getPath('desktop'), fileName)
+      // Smart path resolution for standard folders
+      const standardFolders = ['desktop', 'documents', 'downloads', 'music', 'pictures', 'videos']
+      const lowerFileName = fileName.toLowerCase()
+      for (const folder of standardFolders) {
+        if (lowerFileName.startsWith(`${folder}/`) || lowerFileName.startsWith(`${folder}\\`)) {
+          const relativePart = fileName.substring(folder.length + 1)
+          targetPath = path.join(app.getPath(folder as any), relativePart)
+          isAbsolutePath = true
+          break
+        }
+      }
 
       // 🚨 SAFETY CHECK: Ensure path is safe before writing
       if (!isPathSafe(targetPath)) {

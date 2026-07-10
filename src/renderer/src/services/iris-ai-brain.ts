@@ -15,11 +15,6 @@ export const saveMessage = async (role: 'user' | 'model' | 'iris', text: string)
       parts: [{ text: text }]
     })
 
-    // Also save to conversation memory for auto-cleanup
-    await window.electron.ipcRenderer.invoke('add-conversation-message', {
-      role: safeRole,
-      parts: [{ text: text }]
-    })
   } catch (err) {}
 }
 
@@ -55,5 +50,17 @@ export const retrieveCoreMemory = async (): Promise<string> => {
     return 'The permanent memory bank is currently empty.'
   } catch (error) {
     return `❌ System failure: ${String(error)}`
+  }
+}
+
+export const retrieveLongTermMemory = async (monthsAgo: number): Promise<string> => {
+  try {
+    const memories = await window.electron.ipcRenderer.invoke('get-memory-archive', monthsAgo)
+    if (memories && memories.length > 0) {
+      return `[LONG TERM MEMORY (Offset: ${monthsAgo} months)]\n${JSON.stringify(memories)}`
+    }
+    return `No memory archive found for offset: ${monthsAgo} month(s) ago.`
+  } catch (error) {
+    return `❌ System failure reading long-term memory: ${String(error)}`
   }
 }

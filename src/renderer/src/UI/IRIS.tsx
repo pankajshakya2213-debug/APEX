@@ -23,7 +23,7 @@ import DashboardView from '../views/Dashboard'
 import PhoneView from '../views/Phone'
 import { VisionMode } from '@renderer/IndexRoot'
 
-// const AppsView = lazy(() => import('../views/APP'))
+
 const WorkFlowEditorView = lazy(() => import('../views/WorkFlowEditor'))
 const NotesView = lazy(() => import('../views/Notes'))
 const SettingsView = lazy(() => import('../views/Settings'))
@@ -66,7 +66,7 @@ const APEX = (props: APEXProps) => {
     const timer = setInterval(() => {
       setTime(new Date())
       getSystemStatus().then(setStats)
-    }, 500)
+    }, 2000)
     return () => clearInterval(timer)
   }, [])
 
@@ -94,7 +94,7 @@ const APEX = (props: APEXProps) => {
       if (Array.isArray(history)) setChatHistory(history.slice(-15))
     }
     fetchHistory()
-    const interval = setInterval(fetchHistory, 500)
+    const interval = setInterval(fetchHistory, 2000)
     return () => clearInterval(interval)
   }, [])
 

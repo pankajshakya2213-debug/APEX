@@ -11,6 +11,7 @@ import {
   RiDownloadLine
 } from 'react-icons/ri'
 import { motion, AnimatePresence } from 'framer-motion'
+import BackgroundGlows from '../components/BackgroundGlows'
 
 interface GalleryImage {
   filename: string
@@ -146,10 +147,7 @@ const GalleryView = () => {
 
   return (
     <div className="flex-1 bg-[#080a09] h-full relative overflow-hidden font-sans flex flex-col text-zinc-100">
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+      <BackgroundGlows />
 
       <div className="p-5 relative z-10 flex flex-col flex-1 overflow-hidden">
         <div className="flex items-center justify-between shrink-0 rounded-xl border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-4 mb-5">

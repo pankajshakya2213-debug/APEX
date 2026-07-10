@@ -732,3 +732,61 @@ button {
   color: rgba(226, 232, 240, 0.78);
   font-size: 14px;
 }
+
+/* === APEX CUSTOM THEMES === */
+.theme-default .bg-layer { background-color: #080a09; }
+
+.theme-cyberpunk .bg-layer { 
+  background-color: #0b0c10; 
+  background-image: 
+    linear-gradient(0deg, transparent 24%, rgba(0, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.05) 75%, rgba(0, 255, 255, 0.05) 76%, transparent 77%, transparent), 
+    linear-gradient(90deg, transparent 24%, rgba(0, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.05) 75%, rgba(0, 255, 255, 0.05) 76%, transparent 77%, transparent); 
+  background-size: 50px 50px; 
+}
+
+.theme-space .bg-layer { 
+  background-color: #050510; 
+  background-image: 
+    radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), 
+    radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), 
+    radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), 
+    radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px); 
+  background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px; 
+  background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; 
+  animation: space-move 100s linear infinite; 
+}
+
+.theme-hacker .bg-layer { 
+  background-color: #020a02; 
+  background-image: linear-gradient(0deg, transparent 95%, rgba(0, 255, 0, 0.1) 100%); 
+  background-size: 100% 4px; 
+  animation: scanline 10s linear infinite; 
+}
+
+.theme-obsidian .bg-layer { 
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.4), transparent 50%), 
+    radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.4), transparent 50%), 
+    #000; 
+  animation: obsidian-flow 15s ease infinite alternate; 
+}
+
+@keyframes space-move { 
+  from { background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; } 
+  to { background-position: 550px 550px, 390px 410px, 380px 520px, 220px 250px; } 
+}
+@keyframes obsidian-flow { 
+  0% { background-position: 0% 50%; } 
+  100% { background-position: 100% 50%; } 
+}
+@keyframes scanline { 
+  0% { background-position: 0 0; } 
+  100% { background-position: 0 400px; } 
+}
+
+/* === STATIC THEMES === */
+.theme-static-1 .bg-layer { background: #111; }
+.theme-static-2 .bg-layer { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+.theme-static-3 .bg-layer { background: linear-gradient(to bottom, #000428, #004e92); }
+.theme-static-4 .bg-layer { background: linear-gradient(45deg, #ff00cc, #333399); }
+.theme-static-5 .bg-layer { background: radial-gradient(circle at center, #1a2a6c, #112, #000); }

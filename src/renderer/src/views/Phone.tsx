@@ -19,6 +19,7 @@ import {
   RiCheckLine,
   RiSave3Line
 } from 'react-icons/ri'
+import BackgroundGlows from '../components/BackgroundGlows'
 
 const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
   const [ip, setIp] = useState(() => localStorage.getItem('iris_adb_ip') || '')
@@ -324,10 +325,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
   if (status !== 'connected' && uiMode === 'history') {
     return (
       <div className="flex-1 bg-[#080a09] min-h-screen text-zinc-100 relative overflow-y-auto scrollbar-small pb-24 p-5">
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+      <BackgroundGlows />
 
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
           <div className="flex items-center justify-between rounded-xl border border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-5">
@@ -415,10 +413,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
   if (status !== 'connected' && uiMode === 'manual') {
     return (
       <div className="relative flex-1 flex flex-col lg:flex-row items-start justify-center gap-8 p-6 md:p-12 animate-in fade-in duration-300 bg-[#080a09] min-h-dvh overflow-y-auto text-zinc-100 pb-24">
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+      <BackgroundGlows />
 
         <div className="w-full lg:w-1/3 max-w-md flex flex-col gap-6 shrink-0">
           {deviceHistory.length > 0 && (
@@ -644,10 +639,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
 
   return (
     <div className="relative flex-1 flex flex-col lg:flex-row items-center justify-center gap-10 p-10 animate-in fade-in duration-500 bg-[#080a09] min-h-screen overflow-y-auto">
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+      <BackgroundGlows />
 
       <div className="w-1/4 flex flex-col">
         <div className="flex items-center gap-4 mb-6">

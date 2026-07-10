@@ -78,6 +78,8 @@ import registerLockSystem from './security/lock-system'
 import { autoUpdater } from 'electron-updater';
 
 app.commandLine.appendSwitch('use-fake-ui-for-media-stream')
+app.commandLine.appendSwitch('disable-disk-cache')
+app.commandLine.appendSwitch('disable-http-cache')
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {

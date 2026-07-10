@@ -35,6 +35,7 @@ import {
 } from '@renderer/functions/whatsapp-manager-api'
 import { runTerminal } from '@renderer/functions/coding-manager-api'
 import { draftEmail, readEmails, sendEmail } from '@renderer/functions/gmail-manager-api'
+import BackgroundGlows from '../components/BackgroundGlows'
 
 const CATEGORIZED_TOOLS = {
   TRIGGERS: [
@@ -408,10 +409,7 @@ function Editor() {
 
   return (
     <div className="flex h-full w-full bg-[#080a09] relative overflow-hidden font-sans text-zinc-100">
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+      <BackgroundGlows />
 
       <div
         className={`fixed top-10 left-0 h-[calc(100vh-150px)] overflow-y-auto border-r border-white/20 bg-white/5 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-4 pb-8 flex flex-col gap-1 transition-all duration-300 ease-in-out z-40 library-scrollbar overflow-x-hidden ${isSidebarOpen ? 'w-72 opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-10 p-0'}`}
@@ -472,10 +470,7 @@ function Editor() {
         onDrop={onDrop}
         onDragOver={onDragOver}
       >
-      {/* Ambient Background Glows */}
-      <div className="pointer-events-none absolute -left-40 top-[-20%] h-[600px] w-[600px] rounded-full bg-purple-600/15 mix-blend-screen blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/15 mix-blend-screen blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-violet-600/15 mix-blend-screen blur-[110px]" />
+      <BackgroundGlows />
 
         <div
           className={`absolute bottom-36 z-20 flex items-end gap-3 transition-all ${

@@ -13,6 +13,7 @@ import LiveCodingWidget from './Widgets/LiveCodingWidget'
 import WormholeWidget from './Widgets/WormholeWidget'
 import OracleWidget from './Widgets/RagOrcaleWidget'
 import ResearchWidget from './Widgets/DeepResearch'
+import DeepResearchWriter from './Widgets/DeepResearchWriter'
 import SemanticWidget from './Widgets/SematicSearch'
 import SmartDropZonesWidget from './Widgets/SmartZoneWidget'
 import TitleBar from './components/Titlebar'
@@ -268,6 +269,7 @@ const IndexRoot = () => {
         />
       </div>
       <SmartDropZonesWidget />
+      <DeepResearchWriter />
       <SemanticWidget />
       <OracleWidget />
       <WormholeWidget />
